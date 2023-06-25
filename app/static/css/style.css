@@ -1,0 +1,187 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    color: #ffffff;
+    background-color: #1f1f1f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    text-align: left;
+    color: #ffffff;
+    width: 65%;
+}
+
+#app-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 追加したチャットと設定のコンテナ */
+#chat-settings-container {
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+}
+
+#chatbox {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    max-height: 62vh;
+    min-height: 62vh;
+    border: 1px solid #4a4a4a;
+    padding: 20px;
+    overflow-y: scroll;
+    border-radius: 10px;
+    background-color: #2f2f2f;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+/* 入力コンテナのレイアウト設定 */
+#input-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+    border: 1px solid #000000; /* 黒に変更 */
+    padding: 20px; 
+    border-radius: 10px; 
+    background-color: #2f2f2f; 
+    box-sizing: border-box;
+}
+
+#settings-container {
+    width: 30%;
+    height: 80vh;
+    border: 1px solid #000000; /* 黒に変更 */
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #2f2f2f;
+    box-sizing: border-box;
+}
+
+/* スクロールバーの全体をスタイリング */
+#chatbox::-webkit-scrollbar {
+    width: 12px;
+}
+
+/* スクロールバーのトラック（背景）部分をスタイリング */
+#chatbox::-webkit-scrollbar-track {
+    background-color: #333333;
+}
+
+/* スクロールバーのハンドル（つまみ）部分をスタイリング */
+#chatbox::-webkit-scrollbar-thumb {
+    background-color: #333333;
+}
+
+#message {
+    flex-grow: 1;
+    height: 50px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #4a4a4a;
+    padding: 10px;
+    background-color: #2f2f2f;
+    color: #ffffff;
+}
+
+/* ユーザーメッセージのスタイル */
+.user-text {
+    align-self: flex-end;
+    background-color: #A7F3D0;
+    color: #333333;
+    margin-left: auto;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    width: fit-content;
+    max-width: 60%;
+    line-height: 1.5;
+}
+
+/* GPTの応答のスタイル */
+.gpt-text {
+    align-self: flex-start;
+    background-color: #0084ff;
+    color: #ffffff;
+    margin-right: auto;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    width: fit-content;
+    max-width: 60%;
+    line-height: 1.5;
+}
+
+
+#chatform input[type="submit"] {
+    width: 70px;
+    height: 60px;
+    border: 1px solid #4a4a4a;
+    border-radius: 5px;
+    background-color: #0084ff;
+    color: #ffffff;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#settingsform input[type="text"], #settingsform input[type="number"], #settingsform input[type="password"] {
+    width: calc(100% - 20px); /* パディングとボーダーの幅を差し引いた値に変更 */
+    margin-top: 5px;
+    padding: 10px;
+    border: 1px solid #4a4a4a; 
+    border-radius: 5px;
+    background-color: #363636;
+    color: #ffffff;
+    transition: 0.3s;
+}
+
+
+#settingsform input[type="submit"] {
+    width: calc(100% - 20px); /* パディングとボーダーの幅を差し引いた値に変更 */
+    margin-top: 20px;
+    border: 1px solid #4a4a4a;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #0084ff;
+    color: #ffffff;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* APIキーのラベルと入力欄のレイアウトを修正 */
+#settingsform label[for="api_key"], .password-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.password-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+#settingsform input[type="password"] {
+    width: calc(100% - 20px); /* アイコンのスペースを考慮 */
+    /* 他のスタイルは以前のまま */
+    background-color: #363636; /* 黒色の背景 */
+    color: #fff; /* 文字色を白色に設定 */
+}
+
+/* パスワードの可視性トグルボタン */
+.toggle-password {
+    color: #000; /* アイコンの色を黒に設定 */
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+

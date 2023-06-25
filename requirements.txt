@@ -1,0 +1,4 @@
+flask
+requests
+openai==0.27.8
+langchain==0.0.214
