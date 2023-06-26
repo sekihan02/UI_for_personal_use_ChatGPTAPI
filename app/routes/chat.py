@@ -26,7 +26,12 @@ def index():
 def update_settings():
     data = request.json
     settings['model'] = data['model']
-    settings['temperature'] = float(data['temperature'])
+    temperature = float(data['temperature'])
+    if 0.0 <= temperature <= 1.0:
+        settings['temperature'] = temperature
+    else:
+        return jsonify({'status': 'error', 'message': 'Temperature must be between 0.0 and 1.0'})
+
     settings['api_key'] = data['api_key']
     return jsonify({'status': 'success'})
 

@@ -27,8 +27,7 @@
                 <input type="text" id="model" name="model" value="gpt-3.5-turbo-0613">
         
                 <label for="temperature">Temperature:</label>
-                <input type="number" step="0.01" id="temperature" name="temperature" value="0.8">
-        
+                <input type="number" step="0.01" min="0.0" max="1.0" id="temperature" value="0.8" required>
                 <label for="api_key">API Key:</label>
                 <div class="password-container">
                     <input type="password" id="api_key" placeholder="API Key">
