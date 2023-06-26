@@ -8,7 +8,6 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.chains import SequentialChain
 
-
 chat_bp = Blueprint('chat', __name__)
 
 # Global settings for model and temperature
