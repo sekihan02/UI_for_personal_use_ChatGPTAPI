@@ -7,7 +7,6 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.chains import SequentialChain
-from langchain.memory import SimpleMemory
 
 
 chat_bp = Blueprint('chat', __name__)
@@ -31,10 +30,38 @@ def update_settings():
     settings['api_key'] = data['api_key']
     return jsonify({'status': 'success'})
 
+class SimpleMemory:
+    def __init__(self, max_length=10):
+        self.memory = []
+        self.max_length = max_length
+
+    # メモリから会話を取得
+    def get(self):
+        return self.memory
+
+    # メモリにメッセージを追加
+    def add(self, message):
+        self.memory.append(message)
+
+        # メモリの長さが最大値を超えた場合は、最古のメッセージを削除
+        if len(self.memory) > self.max_length:
+            self.memory = self.memory[-self.max_length:]
+
+    # ユーザーとAIのメッセージをペアとしてメモリに追加
+    def add_pair(self, message, response):
+        self.add("User: " + message)
+        self.add("AI: " + response)
+
+# 5件のメッセージを記憶するように設定
+memory = SimpleMemory(max_length=5)
+
 @chat_bp.route('/get_response', methods=['POST'])
 def get_response():
     data = request.json
     message = data['message']
+
+    # 以前の会話をメモリから取得
+    past_conversation = memory.get()
 
     # Get the response from the GPT model
     openai.api_key = settings['api_key']
@@ -66,6 +93,9 @@ def get_response():
         output_variables=["res"],
         verbose=True
     )
-    response = res_chain({"question":message})
+    response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
+
+    # メモリに新しい会話のペアを追加
+    memory.add_pair(message, response["res"])
 
     return jsonify({'response': response["res"]})

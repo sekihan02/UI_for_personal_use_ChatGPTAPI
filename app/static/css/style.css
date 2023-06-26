@@ -1,3 +1,65 @@
+body.light-theme {
+    color: #000000;
+    background-color: #ffffff;
+}
+
+body.light-theme h1 {
+    color: #000000;
+}
+
+#theme-switcher {
+    transition: all 0.3s ease;
+}
+
+body.light-theme #theme-switcher {
+    background-color: #DFDFDF !important;
+    color: #454545 !important;
+    border-color: #454545 !important;
+}
+
+body.light-theme #chat-settings-container,
+body.light-theme #chatbox,
+body.light-theme #input-container,
+body.light-theme #settings-container,
+body.light-theme #settingsform input[type="text"], 
+body.light-theme #settingsform input[type="number"], 
+body.light-theme #settingsform input[type="password"],
+body.light-theme #settingsform .password-container,
+body.light-theme #message {
+    background-color: #ffffff;
+    border-color: #000000;
+    color: #000000;
+}
+
+body.light-theme .toggle-password {
+    filter: invert(100%);
+}
+
+body.light-theme .user-text,
+body.light-theme .gpt-text {
+    color: #ffffff;
+}
+
+body.light-theme .user-text {
+    background-color: #000000;
+}
+
+body.light-theme .gpt-text {
+    background-color: #0084ff;
+}
+
+body.light-theme #chatform input[type="submit"],
+body.light-theme #settingsform input[type="submit"] {
+    background-color: #0084ff;
+    color: #ffffff;
+    border-color: #000000;
+}
+
+body.light-theme .password-container .toggle-password {
+    color: #000000;
+}
+
+
 body {
     font-family: 'Roboto', sans-serif;
     color: #ffffff;

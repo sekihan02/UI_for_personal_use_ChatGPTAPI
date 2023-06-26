@@ -1,3 +1,25 @@
+document.getElementById('theme-switcher').addEventListener('click', function() {
+    var body = document.body;
+    if (body.classList.contains('light-theme')) {
+        body.classList.remove('light-theme');
+        this.classList.remove('light-theme');
+        var passwordToggleIcons = document.querySelectorAll('.toggle-password');
+        passwordToggleIcons.forEach(function(icon) {
+            icon.style.filter = 'invert(0%)';
+        });
+    } else {
+        body.classList.add('light-theme');
+        this.classList.add('light-theme');
+        var passwordToggleIcons = document.querySelectorAll('.toggle-password');
+        passwordToggleIcons.forEach(function(icon) {
+            icon.style.filter = 'invert(100%)';
+        });
+    }
+});
+
+
+
+
 document.getElementById('chatform').addEventListener('submit', async function(event) {
     event.preventDefault();
     var messageBox = document.getElementById('message');

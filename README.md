@@ -9,7 +9,8 @@ Azure Openai には非対応
 - API KEYにはOpenai APIで発行した自分のAPIを指定してください
 - Ctrl+Enterで送信
 - Enterで改行
-
+- 背景色の切り替え機能
+- 短期記憶を追加
 
 ![UI_for_GPT_to_chat.gif](./UI_for_GPT_to_chat.gif)
 
