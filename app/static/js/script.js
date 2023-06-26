@@ -17,9 +17,6 @@ document.getElementById('theme-switcher').addEventListener('click', function() {
     }
 });
 
-
-
-
 document.getElementById('chatform').addEventListener('submit', async function(event) {
     event.preventDefault();
     var messageBox = document.getElementById('message');
@@ -76,6 +73,18 @@ document.getElementById('settingsform').addEventListener('submit', async functio
         temperatureInput.value = temperature;
         apiKeyInput.value = apiKey;
     }
+});
+
+document.getElementById('settings-button').addEventListener('click', function() {
+    document.getElementById('settings-button').classList.add('active');
+    document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('settings-content').style.display = 'block';
+});
+
+document.getElementById('recommendations-button').addEventListener('click', function() {
+    document.getElementById('recommendations-button').classList.add('active');
+    document.getElementById('settings-button').classList.remove('active');
+    document.getElementById('settings-content').style.display = 'none';
 });
 
 document.querySelector('.toggle-password').addEventListener('click', function(e) {

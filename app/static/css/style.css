@@ -120,6 +120,7 @@ h1 {
 }
 
 #settings-container {
+    flex-direction: column;
     width: 30%;
     height: 80vh;
     border: 1px solid #000000; /* 黒に変更 */
@@ -218,6 +219,28 @@ h1 {
     cursor: pointer;
     transition: 0.3s;
 }
+#tab-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px; /* ボタンと設定フォームの間に少しスペースを作る */
+}
+
+#settings-button, #recommendations-button {
+    /* 共通のスタイルをここに書く */
+    border: none;
+    border-radius: 5px;
+    color: #ffffff;
+    background-color: #0084ff;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#settings-button.active, #recommendations-button.active {
+    /* アクティブなタブのスタイル */
+    background-color: #454545;
+}
 
 /* APIキーのラベルと入力欄のレイアウトを修正 */
 #settingsform label[for="api_key"], .password-container {
@@ -246,4 +269,3 @@ h1 {
     right: 10px;
     top: 10px;
 }
-

@@ -22,20 +22,29 @@
             </form>
         </div>
         <div id="settings-container">
-            <form id="settingsform">
-                <label for="model">Model:</label>
-                <input type="text" id="model" name="model" value="gpt-3.5-turbo-0613">
-        
-                <label for="temperature">Temperature:</label>
-                <input type="number" step="0.01" min="0.0" max="1.0" id="temperature" value="0.8" required>
-                <label for="api_key">API Key:</label>
-                <div class="password-container">
-                    <input type="password" id="api_key" placeholder="API Key">
-                    <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
-                </div>
-        
-                <input type="submit" value="Update Settings">
-            </form>
+            <div id="tab-buttons">
+                <button id="settings-button">Settings</button>
+                <button id="recommendations-button">Recommend</button>
+            </div>
+            <div id="settings-content">
+                <form id="settingsform">
+                    <label for="model">Model:</label>
+                    <input type="text" id="model" name="model" value="gpt-3.5-turbo-0613">
+            
+                    <label for="temperature">Temperature:</label>
+                    <input type="number" step="0.01" min="0.0" max="1.0" id="temperature" value="0.8" required>
+                    <label for="api_key">API Key:</label>
+                    <div class="password-container">
+                        <input type="password" id="api_key" placeholder="API Key">
+                        <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
+                    </div>
+            
+                    <input type="submit" value="Update Settings">
+                </form>
+            </div>
+            <div id="recommend-content" style="display: none;">
+                <!-- ここにRecommendタブの内容を追加できます -->
+            </div>
         </div>
         
     </div>
