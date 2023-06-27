@@ -19,4 +19,6 @@ Azure Openai には非対応
 Making Recommendationsにチェックを入れると
 そのあとに入力したメッセージの回答の次のメッセージとしておすすめの質問をいくつか生成します。
 
+推奨質問はクリックすると自動で入力欄に入力されます。
+
 ![UI_for_GPT_to_chat_recomend](./UI_for_GPT_to_chat_recomend.gif)

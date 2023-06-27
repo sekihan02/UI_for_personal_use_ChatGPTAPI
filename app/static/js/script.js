@@ -46,7 +46,17 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         recommendList.innerHTML = "";
         
         // Display the new recommendations
-        recommendList.innerHTML = data.recommendations.map(rec => `<li>${rec}</li>`).join('');
+        data.recommendations.forEach(function(rec, index) {
+            var listItem = document.createElement('li');
+            
+            // Remove the prefix (like "1. ", "2. ", etc.)
+            var cleanRec = rec.replace(/^\d+\.\s*/, '');
+            listItem.textContent = cleanRec;
+            listItem.addEventListener('click', function() {
+                document.getElementById('message').value = this.textContent;
+            });
+            recommendList.appendChild(listItem);
+        });
     }
 
     chatBox.scrollTop = chatBox.scrollHeight;
