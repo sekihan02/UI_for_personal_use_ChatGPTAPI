@@ -37,8 +37,21 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
 
     // Display the response
     chatBox.innerHTML += `<p class="gpt-text">GPT-3: ${data.response.replace(/\n/g, '<br>')}</p>`;
+    
+    // If there are recommendations, display them
+    if (data.recommendations) {
+        var recommendList = document.getElementById('recommend-list');
+        
+        // Clear the existing recommendations
+        recommendList.innerHTML = "";
+        
+        // Display the new recommendations
+        recommendList.innerHTML = data.recommendations.map(rec => `<li>${rec}</li>`).join('');
+    }
+
     chatBox.scrollTop = chatBox.scrollHeight;
 });
+
 
 // Add an event listener to the textarea
 document.getElementById('message').addEventListener('keydown', function(event) {
@@ -75,17 +88,41 @@ document.getElementById('settingsform').addEventListener('submit', async functio
     }
 });
 
+document.getElementById('recommend-checkbox').addEventListener('change', async function(event) {
+    var shouldRecommend = event.target.checked;
+
+    // shouldRecommendの結果をデバッグ
+    // console.log(shouldRecommend);
+    // Send the new settings to the server
+    var response = await fetch('/update_recommendation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({should_recommend: shouldRecommend})
+    });
+    var data = await response.json();
+
+    // If the update was successful, log it to the console
+    if (data.status === 'success') {
+        console.log("Recommendation status updated successfully");
+    }
+});
+
 document.getElementById('settings-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.add('active');
     document.getElementById('recommendations-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'block';
+    document.getElementById('recommend-content').style.display = 'none';
 });
 
 document.getElementById('recommendations-button').addEventListener('click', function() {
     document.getElementById('recommendations-button').classList.add('active');
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'none';
+    document.getElementById('recommend-content').style.display = 'block';
 });
+
 
 document.querySelector('.toggle-password').addEventListener('click', function(e) {
     var passwordInput = document.getElementById('api_key');

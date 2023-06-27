@@ -12,5 +12,11 @@ Azure Openai には非対応
 - 背景色の切り替え機能
 - 短期記憶を追加
 
-![UI_for_GPT_to_chat.gif](./UI_for_GPT_to_chat.gif)
+![UI_for　_GPT_to_chat.gif](./UI_for_GPT_to_chat.gif)
 
+## 次の推奨質問の表示
+
+Making Recommendationsにチェックを入れると
+そのあとに入力したメッセージの回答の次のメッセージとしておすすめの質問をいくつか生成します。
+
+![UI_for_GPT_to_chat_recomend](./UI_for_GPT_to_chat_recomend.gif)

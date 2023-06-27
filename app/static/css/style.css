@@ -41,16 +41,18 @@ body.light-theme .gpt-text {
 }
 
 body.light-theme .user-text {
-    background-color: #000000;
+    background-color: #005243;
 }
 
 body.light-theme .gpt-text {
-    background-color: #0084ff;
+    background-color: #202f55;
 }
 
+body.light-theme #settings-button,
+body.light-theme #recommendations-button,
 body.light-theme #chatform input[type="submit"],
 body.light-theme #settingsform input[type="submit"] {
-    background-color: #0084ff;
+    background-color: #202f55; 
     color: #ffffff;
     border-color: #000000;
 }
@@ -77,12 +79,14 @@ h1 {
 
 #app-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start; /* changed from space-between */
+    flex-wrap: wrap; /* add this line */
     width: 100%;
     margin: auto;
     padding: 20px;
     box-sizing: border-box;
 }
+
 
 /* 追加したチャットと設定のコンテナ */
 #chat-settings-container {
@@ -98,7 +102,7 @@ h1 {
     max-height: 62vh;
     min-height: 62vh;
     border: 1px solid #4a4a4a;
-    padding: 20px;
+    padding: 10px 20px;
     overflow-y: scroll;
     border-radius: 10px;
     background-color: #2f2f2f;
@@ -112,8 +116,9 @@ h1 {
     justify-content: space-between;
     width: 100%;
     margin-top: 20px;
-    border: 1px solid #000000; /* 黒に変更 */
-    padding: 20px; 
+    height: 15.5vh;
+    border: 1px solid #4a4a4a;
+    padding: 20px;
     border-radius: 10px; 
     background-color: #2f2f2f; 
     box-sizing: border-box;
@@ -123,11 +128,12 @@ h1 {
     flex-direction: column;
     width: 30%;
     height: 80vh;
-    border: 1px solid #000000; /* 黒に変更 */
+    border: 1px solid #4a4a4a;
     padding: 20px;
     border-radius: 10px;
     background-color: #2f2f2f;
     box-sizing: border-box;
+    margin-left: 20px;
 }
 
 /* スクロールバーの全体をスタイリング */
@@ -173,8 +179,8 @@ h1 {
 /* GPTの応答のスタイル */
 .gpt-text {
     align-self: flex-start;
-    background-color: #0084ff;
-    color: #ffffff;
+    background-color: #98e2ff;
+    color:  #333333;
     margin-right: auto;
     border-radius: 5px;
     padding: 10px;
@@ -184,14 +190,13 @@ h1 {
     line-height: 1.5;
 }
 
-
 #chatform input[type="submit"] {
     width: 70px;
     height: 60px;
     border: 1px solid #4a4a4a;
     border-radius: 5px;
-    background-color: #0084ff;
-    color: #ffffff;
+    background-color: #98e2ff;
+    color:  #333333;
     cursor: pointer;
     transition: 0.3s;
 }
@@ -214,14 +219,16 @@ h1 {
     border: 1px solid #4a4a4a;
     border-radius: 5px;
     padding: 10px;
-    background-color: #0084ff;
-    color: #ffffff;
+    background-color: #98e2ff;
+    color:  #333333;
     cursor: pointer;
     transition: 0.3s;
 }
+
 #tab-buttons {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap; /* add this line */
     width: 100%;
     margin-bottom: 20px; /* ボタンと設定フォームの間に少しスペースを作る */
 }
@@ -230,11 +237,28 @@ h1 {
     /* 共通のスタイルをここに書く */
     border: none;
     border-radius: 5px;
-    color: #ffffff;
-    background-color: #0084ff;
+    background-color: #98e2ff;
+    color:  #333333;
+    border: 1px solid #4a4a4a;
+    min-width: 40px; /* adjust as needed */
     padding: 10px 20px;
     cursor: pointer;
     transition: all 0.3s ease;
+    flex-grow: 1;  /* add this line */
+    text-align: center; /* add this line */
+    white-space: nowrap; /* 改行を無効化 */
+    overflow: hidden; /* コンテンツがボックスを超えた時に隠す */
+    text-overflow: ellipsis; /* 文字列がボックスを超えた場合に...と表示 */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.recommend-button {
+    flex-shrink: 0;
 }
 
 #settings-button.active, #recommendations-button.active {
@@ -268,4 +292,10 @@ h1 {
     position: absolute;
     right: 10px;
     top: 10px;
+}
+
+#recommend-content {
+    overflow-wrap: break-word;
+    overflow-y: auto;
+    max-height: 80%;
 }
