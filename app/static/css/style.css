@@ -50,6 +50,7 @@ body.light-theme .gpt-text {
 
 body.light-theme #settings-button,
 body.light-theme #recommendations-button,
+body.light-theme #wiki-searchations-button,
 body.light-theme #chatform input[type="submit"],
 body.light-theme #settingsform input[type="submit"] {
     background-color: #202f55; 
@@ -62,7 +63,8 @@ body.light-theme .password-container .toggle-password {
 }
 
 body.light-theme #settings-button.active, 
-body.light-theme #recommendations-button.active {
+body.light-theme #recommendations-button.active,
+body.light-theme #wiki-searchations-button.active {
     background-color: #baecff;
     color: #333333;
 }
@@ -148,14 +150,14 @@ h1 {
 }
 
 /* スクロールバーのトラック（背景）部分をスタイリング */
-#chatbox::-webkit-scrollbar-track {
+/* #chatbox::-webkit-scrollbar-track {
     background-color: #333333;
-}
+} */
 
 /* スクロールバーのハンドル（つまみ）部分をスタイリング */
-#chatbox::-webkit-scrollbar-thumb {
+/* #chatbox::-webkit-scrollbar-thumb {
     background-color: #333333;
-}
+} */
 
 #message {
     flex-grow: 1;
@@ -239,7 +241,7 @@ h1 {
     margin-bottom: 20px; /* ボタンと設定フォームの間に少しスペースを作る */
 }
 
-#settings-button, #recommendations-button {
+#settings-button, #recommendations-button, #wiki-searchations-button {
     /* 共通のスタイルをここに書く */
     border: none;
     border-radius: 5px;
@@ -268,21 +270,21 @@ h1 {
 }
 
 /* recommend-buttonをクリックした時の処理 */
-#recommend-list li:active {
+#recommend-list li:active, #wiki-search-list li:active {
     background-color: #888888;
     color: #ffffff;
 }
 
-body.light-theme #recommend-list li:active {
+body.light-theme #recommend-list li:active, #wiki-search-list li:active {
     background-color: #bbbbbb;
     color: #000000;
 }
 
-#recommend-list li {
+#recommend-list li, #wiki-search-list li {
     cursor: pointer;
 }
 
-#settings-button.active, #recommendations-button.active {
+#settings-button.active, #recommendations-button.active, #wiki-searchations-button.active {
     /* アクティブなタブのスタイル */
     background-color: #dcf6ff;
 }
@@ -315,7 +317,7 @@ body.light-theme #recommend-list li:active {
     top: 10px;
 }
 
-#recommend-content {
+#recommend-content, #wiki-search-content {
     overflow-wrap: break-word;
     overflow-y: auto;
     max-height: 80%;

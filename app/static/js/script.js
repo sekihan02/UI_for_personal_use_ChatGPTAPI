@@ -44,13 +44,19 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         
         // Clear the existing recommendations
         recommendList.innerHTML = "";
+    
+        // Add the initial message
+        var initialMessage = document.createElement('p');
+        initialMessage.textContent = data.recommendations[0]; // "次に推奨される質問は次のようなものが考えられます。"
+        recommendList.appendChild(initialMessage);
         
-        // Display the new recommendations
-        data.recommendations.forEach(function(rec, index) {
+        // Add the recommendations
+        data.recommendations.slice(1).forEach(function(rec) { // Skip the first item
             var listItem = document.createElement('li');
             
             // Remove the prefix (like "1. ", "2. ", etc.)
             var cleanRec = rec.replace(/^\d+\.\s*/, '');
+            
             listItem.textContent = cleanRec;
             listItem.addEventListener('click', function() {
                 document.getElementById('message').value = this.textContent;
@@ -58,6 +64,34 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
             recommendList.appendChild(listItem);
         });
     }
+
+    // If there are wiki-searchations, display them
+    if (data.wiki_search) {
+        var wiki_searchList = document.getElementById('wiki-search-list');
+        
+        // Clear the existing wiki_search
+        wiki_searchList.innerHTML = "";
+        
+        // Add the initial message
+        var initialMessage = document.createElement('p');
+        initialMessage.textContent = data.wiki_search[0];
+        wiki_searchList.appendChild(initialMessage);
+        
+        // Add the wiki_search
+        data.wiki_search.slice(1).forEach(function(rec) { // Skip the first item
+            var listItem = document.createElement('li');
+            
+            // Remove the prefix (like "1. ", "2. ", etc.)
+            var cleanRec = rec.replace(/^\d+\.\s*/, '');
+            
+            listItem.textContent = cleanRec;
+            listItem.addEventListener('click', function() {
+                document.getElementById('message').value = this.textContent;
+            });
+            wiki_searchList.appendChild(listItem);
+        });
+    }
+
 
     chatBox.scrollTop = chatBox.scrollHeight;
 });
@@ -98,6 +132,16 @@ document.getElementById('settingsform').addEventListener('submit', async functio
     }
 });
 
+document.getElementById('settings-button').addEventListener('click', function() {
+    document.getElementById('settings-button').classList.add('active');
+    document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('wiki-searchations-button').classList.remove('active');
+    document.getElementById('settings-content').style.display = 'block';
+    document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('wiki-search-content').style.display = 'none';
+});
+
+
 document.getElementById('recommend-checkbox').addEventListener('change', async function(event) {
     var shouldRecommend = event.target.checked;
 
@@ -119,20 +163,44 @@ document.getElementById('recommend-checkbox').addEventListener('change', async f
     }
 });
 
-document.getElementById('settings-button').addEventListener('click', function() {
-    document.getElementById('settings-button').classList.add('active');
-    document.getElementById('recommendations-button').classList.remove('active');
-    document.getElementById('settings-content').style.display = 'block';
-    document.getElementById('recommend-content').style.display = 'none';
-});
-
 document.getElementById('recommendations-button').addEventListener('click', function() {
     document.getElementById('recommendations-button').classList.add('active');
     document.getElementById('settings-button').classList.remove('active');
+    document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'block';
+    document.getElementById('wiki-search-content').style.display = 'none';
 });
 
+document.getElementById('wiki-search-checkbox').addEventListener('change', async function(event) {
+    var shouldRecommendWiki = event.target.checked;
+
+    // shouldRecommendの結果をデバッグ
+    // console.log(shouldRecommend);
+    // Send the new settings to the server
+    var response = await fetch('/update_wiki_recommendation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({should_recommend_wiki: shouldRecommendWiki})
+    });
+
+    var data = await response.json();
+
+    if (data.status === 'success') {
+        console.log("Wiki Recommendation status updated successfully");
+    }
+});
+
+document.getElementById('wiki-searchations-button').addEventListener('click', function() {
+    document.getElementById('wiki-searchations-button').classList.add('active');
+    document.getElementById('settings-button').classList.remove('active');
+    document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('settings-content').style.display = 'none';
+    document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('wiki-search-content').style.display = 'block';
+});
 
 document.querySelector('.toggle-password').addEventListener('click', function(e) {
     var passwordInput = document.getElementById('api_key');
