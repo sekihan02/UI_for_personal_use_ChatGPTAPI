@@ -61,6 +61,12 @@ body.light-theme .password-container .toggle-password {
     color: #000000;
 }
 
+body.light-theme #settings-button.active, 
+body.light-theme #recommendations-button.active {
+    background-color: #baecff;
+    color: #333333;
+}
+
 
 body {
     font-family: 'Roboto', sans-serif;
@@ -261,9 +267,24 @@ h1 {
     flex-shrink: 0;
 }
 
+/* recommend-buttonをクリックした時の処理 */
+#recommend-list li:active {
+    background-color: #888888;
+    color: #ffffff;
+}
+
+body.light-theme #recommend-list li:active {
+    background-color: #bbbbbb;
+    color: #000000;
+}
+
+#recommend-list li {
+    cursor: pointer;
+}
+
 #settings-button.active, #recommendations-button.active {
     /* アクティブなタブのスタイル */
-    background-color: #454545;
+    background-color: #dcf6ff;
 }
 
 /* APIキーのラベルと入力欄のレイアウトを修正 */
