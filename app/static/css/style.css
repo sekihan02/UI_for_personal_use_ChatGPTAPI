@@ -48,9 +48,11 @@ body.light-theme .gpt-text {
     background-color: #202f55;
 }
 
+/* 追加 */
 body.light-theme #settings-button,
 body.light-theme #recommendations-button,
 body.light-theme #wiki-searchations-button,
+body.light-theme #bing-search-button,
 body.light-theme #chatform input[type="submit"],
 body.light-theme #settingsform input[type="submit"] {
     background-color: #202f55; 
@@ -62,9 +64,11 @@ body.light-theme .password-container .toggle-password {
     color: #000000;
 }
 
+/* 追加 */
+body.light-theme #wiki-searchations-button.active, 
+body.light-theme #bing-search-button.active,
 body.light-theme #settings-button.active, 
-body.light-theme #recommendations-button.active,
-body.light-theme #wiki-searchations-button.active {
+body.light-theme #recommendations-button.active {
     background-color: #baecff;
     color: #333333;
 }
@@ -241,7 +245,11 @@ h1 {
     margin-bottom: 20px; /* ボタンと設定フォームの間に少しスペースを作る */
 }
 
-#settings-button, #recommendations-button, #wiki-searchations-button {
+/* 追加 */
+#settings-button, 
+#recommendations-button, 
+#wiki-searchations-button,
+#bing-search-button {
     /* 共通のスタイルをここに書く */
     border: none;
     border-radius: 5px;
@@ -270,12 +278,17 @@ h1 {
 }
 
 /* recommend-buttonをクリックした時の処理 */
-#recommend-list li:active, #wiki-search-list li:active {
+/* 追加 */
+#recommend-list li:active,
+#wiki-search-list li:active,
+#bing-search-list li:active {
     background-color: #888888;
     color: #ffffff;
 }
-
-body.light-theme #recommend-list li:active, #wiki-search-list li:active {
+/* 追加 */
+body.light-theme #recommend-list li:active,
+body.light-theme #wiki-search-list li:active,
+body.light-theme #bing-search-list li:active {
     background-color: #bbbbbb;
     color: #000000;
 }
@@ -284,7 +297,11 @@ body.light-theme #recommend-list li:active, #wiki-search-list li:active {
     cursor: pointer;
 }
 
-#settings-button.active, #recommendations-button.active, #wiki-searchations-button.active {
+/* 追加 */
+#settings-button.active, 
+#recommendations-button.active, 
+#wiki-searchations-button.active,
+#bing-search-button.active {
     /* アクティブなタブのスタイル */
     background-color: #dcf6ff;
 }
@@ -316,9 +333,56 @@ body.light-theme #recommend-list li:active, #wiki-search-list li:active {
     right: 10px;
     top: 10px;
 }
-
-#recommend-content, #wiki-search-content {
+/* 追加 */
+#recommend-content,
+#wiki-search-content,
+#bing-search-content {
     overflow-wrap: break-word;
     overflow-y: auto;
     max-height: 80%;
 }
+
+/* #bing-search-content {
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+} */
+  
+/* #bing-search-content label {
+font-size: 1.2em;
+color: #333;
+} */
+
+#bing_search_v7_subscription_key, #bing_search_v7_endpoint {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+/* #bing-search-checkbox {
+    margin: 20px 0;
+} */
+
+/* #bing-search-list {
+margin: 20px 0;
+padding: 20px;
+border: 1px solid #ddd;
+border-radius: 5px;
+} */
+  

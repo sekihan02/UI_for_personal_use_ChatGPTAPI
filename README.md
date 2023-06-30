@@ -29,3 +29,13 @@ GPTの応答の結果を単語に要約し、要約した単語を検索して�
 クリックすると自動で入力欄に入力されます
 
 ![UI_for_GPT_to_chat_recomendwiki](./UI_for_GPT_to_chat_wiki.gif)
+
+## Bing検索の実施
+
+Bing Search APIを使用して、
+Enable Bing Searchにチェックを入れることで
+GPTの応答の結果を単語に要約し、要約した単語を検索して結果を要約して表示します。
+
+クリックすると自動で入力欄に入力されます
+
+![UI_for_GPT_to_chat_recomendbingbing.gif](./UI_for_GPT_to_chat_recomendbingbing.gif)

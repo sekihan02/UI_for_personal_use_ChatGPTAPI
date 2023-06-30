@@ -10,7 +10,7 @@
     <h1>ChatGPT 📝</h1>
     <button id="theme-switcher" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Switch Theme</button>
     <div id="app-container">
-        <div id="chat-settings-container"> <!-- コンテナの追加 -->
+        <div id="chat-settings-container">
             <div id="chatbox">
                 <!-- Chat messages will be inserted here -->
             </div>
@@ -26,6 +26,7 @@
                 <button id="settings-button">Settings</button>
                 <button id="recommendations-button">Recommend</button>
                 <button id="wiki-searchations-button">WikiSearch</button>
+                <button id="bing-search-button">Bing Search</button>    <!-- 追加 -->
             </div>
             <div id="settings-content">
                 <form id="settingsform">
@@ -38,6 +39,20 @@
                     <div class="password-container">
                         <input type="password" id="api_key" placeholder="API Key">
                         <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
+                    </div>
+                    
+                    <div>
+                        <label for="bing_search_v7_subscription_key">Bing Search V7 Subscription Key:</label>
+                        <div class="password-container">
+                            <input type="password" id="bing_search_v7_subscription_key" placeholder="Subscription Key">
+                            <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
+                        </div>
+                    </div>
+                
+                    <!-- Bing Search V7 Endpointの設定項目 -->
+                    <div>
+                        <label for="bing_search_v7_endpoint">Bing Search V7 Endpoint:</label>
+                        <input type="text" id="bing_search_v7_endpoint" name="bing_search_v7_endpoint", value="https://api.bing.microsoft.com">
                     </div>
             
                     <input type="submit" value="Update Settings">
@@ -54,6 +69,12 @@
                 <input type="checkbox" id="wiki-search-checkbox">
                 <label for="wiki-search-checkbox" style="word-wrap: break-word;">Making Wiki Search</label>
                 <ul id="wiki-search-list"> 
+            </div>
+            <div id="bing-search-content" style="display: none;">    <!-- 追加 -->
+                <!-- ここにBing Searchタブの内容を追加できます -->
+                <input type="checkbox" id="bing-search-checkbox">
+                <label for="bing-search-checkbox" style="word-wrap: break-word;">Enable Bing Search</label>
+                <ul id="bing-search-list"></ul>
             </div>
         </div>
         

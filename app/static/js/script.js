@@ -92,6 +92,32 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         });
     }
 
+    // 追加
+    if (data.bing_search) {
+        var bing_searchList = document.getElementById('bing-search-list');
+        
+        // Clear the existing bing_search
+        bing_searchList.innerHTML = "";
+        
+        // Add the initial message
+        var initialMessage = document.createElement('p');
+        initialMessage.textContent = data.bing_search[0];
+        bing_searchList.appendChild(initialMessage);
+        
+        // Add the bing_search
+        data.bing_search.slice(1).forEach(function(rec) { // Skip the first item
+            var listItem = document.createElement('li');
+            
+            // Remove the prefix (like "1. ", "2. ", etc.)
+            var cleanRec = rec.replace(/^\d+\.\s*/, '');
+            
+            listItem.textContent = cleanRec;
+            listItem.addEventListener('click', function() {
+                document.getElementById('message').value = this.textContent;
+            });
+            bing_searchList.appendChild(listItem);
+        });
+    }    
 
     chatBox.scrollTop = chatBox.scrollHeight;
 });
@@ -110,9 +136,13 @@ document.getElementById('settingsform').addEventListener('submit', async functio
     var modelInput = document.getElementById('model');
     var temperatureInput = document.getElementById('temperature');
     var apiKeyInput = document.getElementById('api_key');
+    var bingKeyInput = document.getElementById('bing_search_v7_subscription_key'); // 新たに追加
+    var bingEndpointInput = document.getElementById('bing_search_v7_endpoint'); // 新たに追加
     var model = modelInput.value;
     var temperature = temperatureInput.value;
     var apiKey = apiKeyInput.value;
+    var bingKey = bingKeyInput.value; // 新たに追加
+    var bingEndpoint = bingEndpointInput.value; // 新たに追加
 
     // Send the new settings to the server
     var response = await fetch('/update_settings', {
@@ -120,7 +150,7 @@ document.getElementById('settingsform').addEventListener('submit', async functio
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({model: model, temperature: temperature, api_key: apiKey})
+        body: JSON.stringify({model: model, temperature: temperature, api_key: apiKey, bing_search_v7_subscription_key: bingKey, bing_search_v7_endpoint: bingEndpoint}) // 新たに追加
     });
     var data = await response.json();
 
@@ -129,18 +159,22 @@ document.getElementById('settingsform').addEventListener('submit', async functio
         modelInput.value = model;
         temperatureInput.value = temperature;
         apiKeyInput.value = apiKey;
+        bingKeyInput.value = bingKey; // 新たに追加
+        bingEndpointInput.value = bingEndpoint; // 新たに追加
     }
 });
 
+// クリックイベントリスナー
 document.getElementById('settings-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.add('active');
     document.getElementById('recommendations-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
+    document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'block';
     document.getElementById('recommend-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
+    document.getElementById('bing-search-content').style.display = 'none';
 });
-
 
 document.getElementById('recommend-checkbox').addEventListener('change', async function(event) {
     var shouldRecommend = event.target.checked;
@@ -163,13 +197,16 @@ document.getElementById('recommend-checkbox').addEventListener('change', async f
     }
 });
 
+// 追加
 document.getElementById('recommendations-button').addEventListener('click', function() {
     document.getElementById('recommendations-button').classList.add('active');
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
+    document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'block';
     document.getElementById('wiki-search-content').style.display = 'none';
+    document.getElementById('bing-search-content').style.display = 'none';
 });
 
 document.getElementById('wiki-search-checkbox').addEventListener('change', async function(event) {
@@ -193,25 +230,64 @@ document.getElementById('wiki-search-checkbox').addEventListener('change', async
     }
 });
 
+// 追加
 document.getElementById('wiki-searchations-button').addEventListener('click', function() {
     document.getElementById('wiki-searchations-button').classList.add('active');
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'block';
+    document.getElementById('bing-search-content').style.display = 'none';
+});
+// 追加
+document.querySelectorAll('.toggle-password').forEach(function(toggle) {
+    toggle.addEventListener('click', function(e) {
+        var passwordInput = e.target.previousElementSibling;
+        var passwordIcon = e.target;
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash'); // change to eye-slash when password is visible
+        } else {
+            passwordInput.type = 'password';
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye'); // change to eye when password is hidden
+        }
+    });
 });
 
-document.querySelector('.toggle-password').addEventListener('click', function(e) {
-    var passwordInput = document.getElementById('api_key');
-    var passwordIcon = e.target;
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        passwordIcon.classList.remove('fa-eye');
-        passwordIcon.classList.add('fa-eye-slash'); // change to eye-slash when password is visible
-    } else {
-        passwordInput.type = 'password';
-        passwordIcon.classList.remove('fa-eye-slash');
-        passwordIcon.classList.add('fa-eye'); // change to eye when password is hidden
+// 追加
+document.getElementById('bing-search-button').addEventListener('click', function() {
+    document.getElementById('settings-button').classList.remove('active');
+    document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('wiki-searchations-button').classList.remove('active');
+    document.getElementById('bing-search-button').classList.add('active');
+    document.getElementById('settings-content').style.display = 'none';
+    document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('wiki-search-content').style.display = 'none';
+    document.getElementById('bing-search-content').style.display = 'block';
+});
+
+// 追加
+document.getElementById('bing-search-checkbox').addEventListener('change', async function(event) {
+    var shouldRecommendBing = event.target.checked;
+
+    // shouldRecommendBingの結果をデバッグ
+    // console.log(shouldRecommendBing);
+    // Send the new settings to the server
+    var response = await fetch('/update_bing_recommendation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({should_recommend_bing: shouldRecommendBing})
+    });
+
+    var data = await response.json();
+
+    if (data.status === 'success') {
+        console.log("Bing Recommendation status updated successfully");
     }
 });

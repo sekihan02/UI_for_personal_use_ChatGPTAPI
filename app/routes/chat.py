@@ -1,11 +1,11 @@
 import os
 import ast
+import requests
 from flask import Blueprint, render_template
 from flask import Flask, request, jsonify
 from flask import current_app as app
 import openai
 import wikipedia
-
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
@@ -17,13 +17,17 @@ chat_bp = Blueprint('chat', __name__)
 settings = {
     'model': 'gpt-3.5-turbo-0613',
     'temperature': 0.8,
-    'api_key': ''
+    'api_key': '',
+    'bing_search_v7_subscription_key': '',
+    'bing_search_v7_endpoint': 'https://api.bing.microsoft.com'
 }
 
 # Making Recommendationsのチェック取得
 should_recommend = False  # Initial value
 #  Making Wiki Recommendationsのチェック取得
 should_recommend_wiki = False  # Initial value
+# Making Bing Search Recommendationsのチェック取得
+should_recommend_bing = False  # Initial value
 
 @chat_bp.route("/")
 def index():
@@ -40,6 +44,10 @@ def update_settings():
         return jsonify({'status': 'error', 'message': 'Temperature must be between 0.0 and 1.0'})
 
     settings['api_key'] = data['api_key']
+    # 追加
+    settings['bing_search_v7_subscription_key'] = data['bing_search_v7_subscription_key']
+    settings['bing_search_v7_endpoint'] = data['bing_search_v7_endpoint']
+    
     return jsonify({'status': 'success'})
 
 @chat_bp.route('/update_recommendation', methods=['POST'])
@@ -47,7 +55,7 @@ def update_recommendation():
     global should_recommend
     data = request.json
     should_recommend = data['should_recommend']
-    app.logger.info(f"Updated should_recommend: {should_recommend}")  # Debugging statement
+    # app.logger.info(f"Updated should_recommend: {should_recommend}")  # Debugging statement
     return jsonify({'status': 'success'})
 
 @chat_bp.route('/update_wiki_recommendation', methods=['POST'])
@@ -55,7 +63,16 @@ def update_wiki_recommendation():
     global should_recommend_wiki
     data = request.json
     should_recommend_wiki = data['should_recommend_wiki']
-    app.logger.info(f"Updated should_recommend_wiki: {should_recommend_wiki}")  # Debugging statement
+    # app.logger.info(f"Updated should_recommend_wiki: {should_recommend_wiki}")  # Debugging statement
+    return jsonify({'status': 'success'})
+
+# 追加
+@chat_bp.route('/update_bing_recommendation', methods=['POST'])
+def update_bing_recommendation():
+    global should_recommend_bing
+    data = request.json
+    should_recommend_bing = data['should_recommend_bing']
+    # app.logger.info(f"Updated should_recommend_bing: {should_recommend_bing}")  # Debugging statement
     return jsonify({'status': 'success'})
 
 class SimpleMemory:
@@ -80,13 +97,15 @@ class SimpleMemory:
         self.add("User: " + message)
         self.add("AI: " + response)
 
-# 5件のメッセージを記憶するように設定
+# 8件のメッセージを記憶するように設定
 memory = SimpleMemory(max_length=8)
 
 @chat_bp.route('/get_response', methods=['POST'])
 def get_response():
     global should_recommend
-    app.logger.info(f"In get_response, should_recommend: {should_recommend}")  # Debugging statement
+    global should_recommend_wiki
+    global should_recommend_bing  # 追加
+    # app.logger.info(f"In get_response, should_recommend: {should_recommend}")  # Debugging statement
 
     # get the user's message from the POST request
     message = request.get_json()['message']
@@ -162,7 +181,104 @@ def get_response():
 
         return jsonify({'response': response['res'], 'recommendations': recommendations})
 
-    # WikiRecommendのMaking Wiki Recommendationsのチェックがあったら
+    # Bing Searchのチェックがあったら
+    if should_recommend_bing:    
+        word_list_template = """
+        以下が回答を3つのキーワードに分割した例です。
+        ---
+        回答: - 寿司
+        - ラーメン
+        - カレーライス
+        - ピザ
+        - 焼肉
+        キーワード: 寿司 ラーメン カレーライス
+        ---
+        ---
+        回答: 織田信長は、戦国時代の日本で活躍した武将・戦国大名です。信長は、尾張国の織田家の当主として生まれ、若い頃から戦国時代の混乱を乗り越えて勢力を拡大しました。政治的な手腕も備えており、国内の統一を目指し、戦国大名や寺社などとの同盟を結びました。彼の統一政策は、後の豊臣秀吉や徳川家康による天下統一に繋がっていきました。
+        信長の死は、本能寺の変として知られています。彼は家臣の明智光秀によって襲撃され、自害に追い込まれました。しかし、彼の業績や影響力は、その後の日本の歴史に大きく残りました。
+        キーワード: 織田信長 戦国時代 本能寺
+        ---
+        回答:{response}
+        キーワード"""
+
+        # プロンプトテンプレートの生成
+        word_list_temp = PromptTemplate(
+            input_variables=["response"], 
+            template=word_list_template
+        )
+
+        # LLMChainの準備
+        word_list_chain = LLMChain(
+            llm=llm, 
+            prompt=word_list_temp, 
+            output_key="keywords"
+        )
+
+        keyword_recchain = SequentialChain(
+            chains=[word_list_chain],
+            input_variables=["response"], 
+            output_variables=["keywords"],
+            verbose=True
+        )
+        keywords = keyword_recchain({"response": response["res"]})
+        # 文字列をPythonのリストに変換
+        keyword_list = keywords["keywords"].split(' ')
+        
+        bing_template = """あなたは検索結果の内容を入力として受け取り、要約を最大で5つ箇条書きで生成してください。
+        生成結果の先頭は必ず順番に1. 2. と数字を必ず記載して生成してください。
+        検索結果の内容:{bing_search}
+        要約"""
+        
+        # プロンプトテンプレートの生成
+        bing_temp = PromptTemplate(
+            input_variables=["bing_search"], 
+            template=bing_template
+        )
+
+        # LLMChainの準備
+        bing_chain = LLMChain(
+            llm=llm, 
+            prompt=bing_temp, 
+            output_key="summary_list"
+        )
+
+        summary_recchain = SequentialChain(
+            chains=[bing_chain],
+            input_variables=["bing_search"], 
+            output_variables=["summary_list"],
+            verbose=True
+        )
+
+        # 各キーワードについてBing検索を実行し、結果の要約する
+        results = get_bing_search_results_for_keywords(keyword_list, num_results=3, lang='ja-JP')
+        
+        # キーワードごとにスニペットをグループ化
+        grouped_results = {}
+        for result in results:
+            keyword = result['keyword']
+            snippet = result['snippet']
+            
+            # キーワードがgrouped_resultsにない場合は追加
+            if keyword not in grouped_results:
+                grouped_results[keyword] = []
+            
+            # キーワードに対応するリストにスニペットを追加
+            grouped_results[keyword].append(snippet)
+
+        # 各キーワードのスニペットを、セパレーターを使って連結
+        concatenated_snippets_list = []
+        separator = " ---- "  # 区切り文字として意味のある文字列を選択
+        for keyword, snippets in grouped_results.items():
+            concatenated_snippets = separator.join(snippets)
+            concatenated_snippets_list.append(concatenated_snippets)
+            
+        summary_bing = summary_recchain({"bing_search": concatenated_snippets_list})
+        
+        bing_search = ["関連ワードを調査しました。"] + summary_bing["summary_list"].split('\n')
+
+        return jsonify({'response': response['res'], 'bing_search': bing_search})
+    
+    # WikiSearchのMaking Wiki Searchのチェックがあったら
     if should_recommend_wiki:
         list_template = """あなたは回答を入力として受け取り、回答を表す3つ単語に変換してください。
         以下が単語リストの生成例です。
@@ -243,6 +359,78 @@ def get_response():
         return jsonify({'response': response['res'], 'wiki_search': wiki_search})
 
     return jsonify({'response': response["res"]})
+
+
+def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
+    """
+    与えられたキーワードのリストに対し、各キーワードについてBingで検索し、検索結果を取得する。
+
+    Parameters
+    ----------
+    keywords : list of str
+        検索するキーワードのリスト
+    num_results : int, optional
+        各キーワードに対して取得する検索結果の数 (default is 3)
+    lang : str, optional
+        使用する言語 (default is 'ja' for Japanese)
+
+    Returns
+    -------
+    all_results : list of dict
+        各キーワードについて取得した検索結果を含む辞書のリスト。
+        各辞書はキーワード、検索結果のタイトル、URL、概要を含む。
+    """
+    subscription_key = settings['bing_search_v7_subscription_key']
+    endpoint = settings['bing_search_v7_endpoint'].rstrip('/') + "/v7.0/search"
+    all_results = []
+
+    for keyword in keywords:
+        params = {'q': keyword, 'count': num_results, 'mkt': lang}
+        headers = {'Ocp-Apim-Subscription-Key': subscription_key}
+        try:
+            response = requests.get(endpoint, headers=headers, params=params)
+            response.raise_for_status()
+
+            json_response = response.json()
+            results = []
+            if 'webPages' in json_response:
+                for item in json_response['webPages']['value']:
+                    results.append({
+                        'keyword': keyword,
+                        'name': item['name'],
+                        'url': item['url'],
+                        'snippet': item['snippet']
+                    })
+            else:
+                print(f"No web pages found for keyword {keyword}")
+                
+            all_results.extend(results)
+        except Exception as ex:
+            print(f"Error for keyword {keyword}: {str(ex)}")
+
+    # params = {'q': keywords, 'count': num_results, 'mkt': lang}
+    # headers = {'Ocp-Apim-Subscription-Key': subscription_key}
+    # try:
+        # response = requests.get(endpoint, headers=headers, params=params)
+        # response.raise_for_status()
+
+        # json_response = response.json()
+        # results = []
+        # if 'webPages' in json_response:
+            # for item in json_response['webPages']['value']:
+                # results.append({
+                    # 'keyword': keywords,
+                    # 'name': item['name'],
+                    # 'url': item['url'],
+                    # 'snippet': item['snippet']
+                # })
+        # else:
+            # print(f"No web pages found for keyword {keyword}")
+        # all_results.extend(results)
+    # except Exception as ex:
+        # print(f"Error for keyword {keyword}: {str(ex)}")
+        
+    return all_results
 
 
 def get_wikipedia_articles_for_keywords(keywords, num_articles=3, lang='ja'):
