@@ -117,7 +117,33 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
             });
             bing_searchList.appendChild(listItem);
         });
-    }    
+    }
+
+    if (data.rec_bing_search) {
+        var rec_bing_searchList = document.getElementById('rec-bing-search-list');
+        
+        // Clear the existing bing_search
+        rec_bing_searchList.innerHTML = "";
+        
+        // Add the initial message
+        var initialMessage = document.createElement('p');
+        initialMessage.textContent = data.rec_bing_search[0];
+        rec_bing_searchList.appendChild(initialMessage);
+        
+        // Add the bing_search
+        data.rec_bing_search.slice(1).forEach(function(rec) { // Skip the first item
+            var listItem = document.createElement('li');
+            
+            // Remove the prefix (like "1. ", "2. ", etc.)
+            var cleanRec = rec.replace(/^\d+\.\s*/, '');
+            
+            listItem.textContent = cleanRec;
+            listItem.addEventListener('click', function() {
+                document.getElementById('message').value = this.textContent;
+            });
+            rec_bing_searchList.appendChild(listItem);
+        });
+    }
 
     chatBox.scrollTop = chatBox.scrollHeight;
 });
@@ -168,10 +194,12 @@ document.getElementById('settingsform').addEventListener('submit', async functio
 document.getElementById('settings-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.add('active');
     document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'block';
     document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
 });
@@ -199,12 +227,14 @@ document.getElementById('recommend-checkbox').addEventListener('change', async f
 
 // 追加
 document.getElementById('recommendations-button').addEventListener('click', function() {
-    document.getElementById('recommendations-button').classList.add('active');
     document.getElementById('settings-button').classList.remove('active');
+    document.getElementById('recommendations-button').classList.add('active');
+    document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'block';
+    document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
 });
@@ -236,9 +266,11 @@ document.getElementById('wiki-searchations-button').addEventListener('click', fu
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('recommendations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
+    document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'block';
+    document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
 });
 // 追加
@@ -264,9 +296,11 @@ document.getElementById('bing-search-button').addEventListener('click', function
     document.getElementById('recommendations-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.add('active');
+    document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
+    document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'block';
 });
 
@@ -283,6 +317,37 @@ document.getElementById('bing-search-checkbox').addEventListener('change', async
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({should_recommend_bing: shouldRecommendBing})
+    });
+
+    var data = await response.json();
+
+    if (data.status === 'success') {
+        console.log("Bing Recommendation status updated successfully");
+    }
+});
+
+document.getElementById('rec-bing-search-button').addEventListener('click', function() {
+    document.getElementById('settings-button').classList.remove('active');
+    document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('wiki-searchations-button').classList.remove('active');
+    document.getElementById('bing-search-button').classList.remove('active');
+    document.getElementById('rec-bing-search-button').classList.add('active');
+    document.getElementById('settings-content').style.display = 'none';
+    document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('wiki-search-content').style.display = 'none';
+    document.getElementById('rec-bing-search-content').style.display = 'block';
+    document.getElementById('bing-search-content').style.display = 'none';
+});
+
+document.getElementById('rec-bing-search-checkbox').addEventListener('change', async function(event) {
+    var shouldRecommendrecBing = event.target.checked;
+
+    var response = await fetch('/update_rec_bing_recommendation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({should_recommend_rec_bing: shouldRecommendrecBing})
     });
 
     var data = await response.json();

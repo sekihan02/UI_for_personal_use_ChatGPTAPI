@@ -24,10 +24,12 @@ settings = {
 
 # Making Recommendationsのチェック取得
 should_recommend = False  # Initial value
-#  Making Wiki Recommendationsのチェック取得
+# Making Wiki Recommendationsのチェック取得
 should_recommend_wiki = False  # Initial value
 # Making Bing Search Recommendationsのチェック取得
 should_recommend_bing = False  # Initial value
+# Making Bing Recommendationsのチェック取得
+should_recommend_rec_bing = False  # Initial value
 
 @chat_bp.route("/")
 def index():
@@ -75,6 +77,13 @@ def update_bing_recommendation():
     # app.logger.info(f"Updated should_recommend_bing: {should_recommend_bing}")  # Debugging statement
     return jsonify({'status': 'success'})
 
+@chat_bp.route('/update_rec_bing_recommendation', methods=['POST'])
+def update_rec_bing_recommendation():
+    global should_recommend_rec_bing
+    data = request.json
+    should_recommend_rec_bing = data['should_recommend_rec_bing']
+    return jsonify({'status': 'success'})
+
 class SimpleMemory:
     def __init__(self, max_length=10):
         self.memory = []
@@ -105,6 +114,8 @@ def get_response():
     global should_recommend
     global should_recommend_wiki
     global should_recommend_bing  # 追加
+    global should_recommend_rec_bing  # 追加
+
     # app.logger.info(f"In get_response, should_recommend: {should_recommend}")  # Debugging statement
 
     # get the user's message from the POST request
@@ -180,6 +191,105 @@ def get_response():
         recommendations = ["次に推奨される質問は次のようなものが考えられます。"] + q_recommend["recommend"].split('\n')
 
         return jsonify({'response': response['res'], 'recommendations': recommendations})
+
+    # Bing Suggestのチェックがあったら
+    if should_recommend_rec_bing:
+        word_list_template = """
+        以下が回答を3つのキーワードに分割した例です。
+        ---
+        回答: - 寿司
+        - ラーメン
+        - カレーライス
+        - ピザ
+        - 焼肉
+        キーワード: 寿司 ラーメン カレーライス
+        ---
+        ---
+        回答: 織田信長は、戦国時代の日本で活躍した武将・戦国大名です。信長は、尾張国の織田家の当主として生まれ、若い頃から戦国時代の混乱を乗り越えて勢力を拡大しました。政治的な手腕も備えており、国内の統一を目指し、戦国大名や寺社などとの同盟を結びました。彼の統一政策は、後の豊臣秀吉や徳川家康による天下統一に繋がっていきました。
+        信長の死は、本能寺の変として知られています。彼は家臣の明智光秀によって襲撃され、自害に追い込まれました。しかし、彼の業績や影響力は、その後の日本の歴史に大きく残りました。
+        キーワード: 織田信長 戦国時代 本能寺
+        ---
+        回答:{response}
+        キーワード"""
+
+        # プロンプトテンプレートの生成
+        word_list_temp = PromptTemplate(
+            input_variables=["response"], 
+            template=word_list_template
+        )
+
+        # LLMChainの準備
+        word_list_chain = LLMChain(
+            llm=llm, 
+            prompt=word_list_temp, 
+            output_key="keywords"
+        )
+
+        keyword_recchain = SequentialChain(
+            chains=[word_list_chain],
+            input_variables=["response"], 
+            output_variables=["keywords"],
+            verbose=True
+        )
+        keywords = keyword_recchain({"response": response["res"]})
+        # 文字列をPythonのリストに変換
+        keyword_list = keywords["keywords"].split(' ')
+        
+        bing_template = """あなたは回答と検索結果の内容を入力として受け取り、回答と検索結果を参考に次にするべき質問を5以上生成してください。
+        生成結果の先頭は必ず順番に1. 2. と数字を必ず記載して生成してください。
+        回答:{response}
+        検索結果の内容:{bing_search}
+        質問"""
+        
+        # プロンプトテンプレートの生成
+        bing_temp = PromptTemplate(
+            input_variables=["response", "bing_search"], 
+            template=bing_template
+        )
+
+        # LLMChainの準備
+        bing_chain = LLMChain(
+            llm=llm, 
+            prompt=bing_temp, 
+            output_key="summary_list"
+        )
+
+        summary_recchain = SequentialChain(
+            chains=[bing_chain],
+            input_variables=["response", "bing_search"], 
+            output_variables=["summary_list"],
+            verbose=True
+        )
+
+        # 各キーワードについてBing検索を実行し、結果の要約する
+        results = get_bing_search_results_for_keywords(keyword_list, num_results=3, lang='ja-JP')
+        
+        # キーワードごとにスニペットをグループ化
+        grouped_results = {}
+        for result in results:
+            keyword = result['keyword']
+            snippet = result['snippet']
+            
+            # キーワードがgrouped_resultsにない場合は追加
+            if keyword not in grouped_results:
+                grouped_results[keyword] = []
+            
+            # キーワードに対応するリストにスニペットを追加
+            grouped_results[keyword].append(snippet)
+
+        # 各キーワードのスニペットを、セパレーターを使って連結
+        concatenated_snippets_list = []
+        separator = " ---- "  # 区切り文字として意味のある文字列を選択
+        for keyword, snippets in grouped_results.items():
+            concatenated_snippets = separator.join(snippets)
+            concatenated_snippets_list.append(concatenated_snippets)
+            
+        summary_bing = summary_recchain({"response": response["res"], "bing_search": concatenated_snippets_list})
+        
+        rec_bing_search = ["次に推奨される質問は次のようなものが考えられます。"] + summary_bing["summary_list"].split('\n')
+        # rec_bing_search = ["次に推奨される質問は次のようなものが考えられます。"] + "てすと\nです\ntest\ntest\ntest".split('\n')
+
+        return jsonify({'response': response['res'], 'rec_bing_search': rec_bing_search})
 
     # Bing Searchのチェックがあったら
     if should_recommend_bing:    

@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Chat with GPT-3</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
+    <head>
+        <title>Chat with GPT-3</title>
+        <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <style>
+        body {
+            font-family: 'Yu Gothic', 'Hiragino Kaku Gothic Pro', Meiryo, sans-serif;
+            font-weight: bold;
+        }
+        button, input {
+            font-weight: bold;
+        }
+        </style>
+    </head>
 <body>
     <h1>ChatGPT 📝</h1>
     <button id="theme-switcher" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Switch Theme</button>
@@ -24,9 +33,10 @@
         <div id="settings-container">
             <div id="tab-buttons">
                 <button id="settings-button">Settings</button>
-                <button id="recommendations-button">Recommend</button>
-                <button id="wiki-searchations-button">WikiSearch</button>
-                <button id="bing-search-button">Bing Search</button>    <!-- 追加 -->
+                <button id="recommendations-button">Suggest</button>
+                <button id="rec-bing-search-button">Bing Suggest</button>    <!-- 追加 -->
+                <button id="wiki-searchations-button">Wiki Find</button>
+                <button id="bing-search-button">Bing Find</button>    <!-- 追加 -->
             </div>
             <div id="settings-content">
                 <form id="settingsform">
@@ -63,6 +73,12 @@
                 <input type="checkbox" id="recommend-checkbox">
                 <label for="recommend-checkbox" style="word-wrap: break-word;">Making Recommendations</label>
                 <ul id="recommend-list"> 
+            </div>
+            <div id="rec-bing-search-content" style="display: none;">    <!-- 追加 -->
+                <!-- ここにBing SearchRecommendタブの内容を追加できます -->
+                <input type="checkbox" id="rec-bing-search-checkbox">
+                <label for="rec-bing-search-checkbox" style="word-wrap: break-word;">Enable Recommend Bing Search</label>
+                <ul id="rec-bing-search-list"></ul>
             </div>
             <div id="wiki-search-content" style="display: none;">
                 <!-- ここにWikiSearchタブの内容を追加できます -->
