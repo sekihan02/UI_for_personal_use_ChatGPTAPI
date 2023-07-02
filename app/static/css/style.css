@@ -135,6 +135,7 @@ h1 {
     border-radius: 10px; 
     background-color: #2f2f2f; 
     box-sizing: border-box;
+    overflow-y: auto;
 }
 
 #settings-container {
@@ -147,6 +148,7 @@ h1 {
     background-color: #2f2f2f;
     box-sizing: border-box;
     margin-left: 20px;
+    overflow-y: auto;
 }
 
 /* スクロールバーの全体をスタイリング */
