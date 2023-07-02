@@ -116,6 +116,10 @@ def get_response():
     global should_recommend_bing  # 追加
     global should_recommend_rec_bing  # 追加
 
+    recommendations = ""
+    rec_bing_search = ""
+    bing_search = ""
+    wiki_search = ""
     # app.logger.info(f"In get_response, should_recommend: {should_recommend}")  # Debugging statement
 
     # get the user's message from the POST request
@@ -190,7 +194,7 @@ def get_response():
         q_recommend = res_recchain({"response": response["res"]})
         recommendations = ["次に推奨される質問は次のようなものが考えられます。"] + q_recommend["recommend"].split('\n')
 
-        return jsonify({'response': response['res'], 'recommendations': recommendations})
+        # return jsonify({'response': response['res'], 'recommendations': recommendations})
 
     # Bing Suggestのチェックがあったら
     if should_recommend_rec_bing:
@@ -289,7 +293,7 @@ def get_response():
         rec_bing_search = ["次に推奨される質問は次のようなものが考えられます。"] + summary_bing["summary_list"].split('\n')
         # rec_bing_search = ["次に推奨される質問は次のようなものが考えられます。"] + "てすと\nです\ntest\ntest\ntest".split('\n')
 
-        return jsonify({'response': response['res'], 'rec_bing_search': rec_bing_search})
+        # return jsonify({'response': response['res'], 'rec_bing_search': rec_bing_search})
 
     # Bing Searchのチェックがあったら
     if should_recommend_bing:    
@@ -386,8 +390,8 @@ def get_response():
         
         bing_search = ["関連ワードを調査しました。"] + summary_bing["summary_list"].split('\n')
 
-        return jsonify({'response': response['res'], 'bing_search': bing_search})
-    
+        # return jsonify({'response': response['res'], 'bing_search': bing_search})
+
     # WikiSearchのMaking Wiki Searchのチェックがあったら
     if should_recommend_wiki:
         list_template = """あなたは回答を入力として受け取り、回答を表す3つ単語に変換してください。
@@ -466,10 +470,10 @@ def get_response():
         
         wiki_search = ["関連ワードを調査しました。"] + summary_wiki["summary_list"].split('\n')
 
-        return jsonify({'response': response['res'], 'wiki_search': wiki_search})
+        # return jsonify({'response': response['res'], 'wiki_search': wiki_search})
 
-    return jsonify({'response': response["res"]})
-
+    # return jsonify({'response': response["res"]})
+    return jsonify({'response': response["res"], 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations})
 
 def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
     """
