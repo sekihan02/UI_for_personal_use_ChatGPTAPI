@@ -37,6 +37,7 @@
                 <button id="rec-bing-search-button">Bing Suggest</button>    <!-- 追加 -->
                 <button id="wiki-searchations-button">Wiki Find</button>
                 <button id="bing-search-button">Bing Find</button>    <!-- 追加 -->
+                <button id="strage-search-button">Strage Find</button>    <!-- 追加 -->
             </div>
             <div id="settings-content">
                 <form id="settingsform">
@@ -64,7 +65,21 @@
                         <label for="bing_search_v7_endpoint">Bing Search V7 Endpoint:</label>
                         <input type="text" id="bing_search_v7_endpoint" name="bing_search_v7_endpoint", value="https://api.bing.microsoft.com">
                     </div>
-            
+
+                    <!-- Strage searchの設定項目 -->
+                    <label for="search_service_name">Search Service Name:</label>
+                    <input type="text" id="search_service_name" name="search_service_name" value="txt-search">
+                    <label for="index_name">Index Name:</label>
+                    <input type="text" id="index_name" name="index_name" value="azureblob-index-pdf">
+                    
+                    <div>
+                        <label for="strage_search_key">Strage Key:</label>
+                        <div class="password-container">
+                            <input type="password" id="strage_search_key" placeholder="strage search key">
+                            <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
+                        </div>
+                    </div>
+
                     <input type="submit" value="Update Settings">
                 </form>
             </div>
@@ -91,6 +106,12 @@
                 <input type="checkbox" id="bing-search-checkbox">
                 <label for="bing-search-checkbox" style="word-wrap: break-word;">Enable Bing Search</label>
                 <ul id="bing-search-list"></ul>
+            </div>
+            <div id="strage-search-content" style="display: none;">    <!-- 追加 -->
+                <!-- ここにStrage Searchタブの内容を追加できます -->
+                <input type="checkbox" id="strage-search-checkbox">
+                <label for="strage-search-checkbox" style="word-wrap: break-word;">Enable Strage Search</label>
+                <ul id="strage-search-list"></ul>
             </div>
         </div>
         

@@ -1,9 +1,13 @@
 import os
 import ast
+# import base64
 import requests
+from urllib.parse import unquote
 from flask import Blueprint, render_template
 from flask import Flask, request, jsonify
 from flask import current_app as app
+from azure.core.credentials import AzureKeyCredential
+from azure.search.documents import SearchClient
 import openai
 import wikipedia
 from langchain.chat_models import ChatOpenAI
@@ -19,7 +23,10 @@ settings = {
     'temperature': 0.8,
     'api_key': '',
     'bing_search_v7_subscription_key': '',
-    'bing_search_v7_endpoint': 'https://api.bing.microsoft.com'
+    'bing_search_v7_endpoint': 'https://api.bing.microsoft.com',
+    'search_service_name': 'txt-search',
+    'index_name': 'azureblob-index-pdf',
+    'strage_search_key': '',
 }
 
 # Making Recommendationsのチェック取得
@@ -30,6 +37,8 @@ should_recommend_wiki = False  # Initial value
 should_recommend_bing = False  # Initial value
 # Making Bing Recommendationsのチェック取得
 should_recommend_rec_bing = False  # Initial value
+# Enable Strage Searchのチェック取得
+should_strage_search = False  # Initial value
 
 @chat_bp.route("/")
 def index():
@@ -49,6 +58,9 @@ def update_settings():
     # 追加
     settings['bing_search_v7_subscription_key'] = data['bing_search_v7_subscription_key']
     settings['bing_search_v7_endpoint'] = data['bing_search_v7_endpoint']
+    settings['search_service_name'] = data['search_service_name']
+    settings['index_name'] = data['index_name']
+    settings['strage_search_key'] = data['strage_search_key']
     
     return jsonify({'status': 'success'})
 
@@ -84,6 +96,13 @@ def update_rec_bing_recommendation():
     should_recommend_rec_bing = data['should_recommend_rec_bing']
     return jsonify({'status': 'success'})
 
+@chat_bp.route('/update_strage_search', methods=['POST'])
+def update_strage_search():
+    global should_strage_search
+    data = request.json
+    should_strage_search = data['should_strage_search']
+    return jsonify({'status': 'success'})
+
 class SimpleMemory:
     def __init__(self, max_length=10):
         self.memory = []
@@ -115,9 +134,11 @@ def get_response():
     global should_recommend_wiki
     global should_recommend_bing  # 追加
     global should_recommend_rec_bing  # 追加
+    global should_strage_search  # 追加
 
     recommendations = ""
     rec_bing_search = ""
+    strage_search = ""
     bing_search = ""
     wiki_search = ""
     # app.logger.info(f"In get_response, should_recommend: {should_recommend}")  # Debugging statement
@@ -471,9 +492,67 @@ def get_response():
         wiki_search = ["関連ワードを調査しました。"] + summary_wiki["summary_list"].split('\n')
 
         # return jsonify({'response': response['res'], 'wiki_search': wiki_search})
+        
+    if should_strage_search:
+        search_service_name = settings['search_service_name']
+        index_name = settings['index_name']
+        api_key = settings['strage_search_key']
 
+        # Create a client
+        credential = AzureKeyCredential(api_key)
+        endpoint = f"https://{search_service_name}.search.windows.net"
+        search_client = SearchClient(endpoint, index_name, credential)
+
+        # Get the keyword from the user
+        keyword = response["res"]
+
+        # Search the PDFs with the keyword
+        results = search_client.search(search_text=keyword)
+
+        # Check if any results were found
+        starage_str = []
+        if not results:
+            print("No results found.")
+        else:
+            # Print the first 2 results
+            for i, result in enumerate(results):
+                if i >= 2:  # Stop after printing 2 results
+                    break
+                # Get the encoded URL
+                encoded_path = result['metadata_storage_path']
+                # URL decode the path
+                decoded_path = unquote(encoded_path)
+                # Extract the file name from the path
+                file_name = os.path.basename(decoded_path)
+                str_ = f"Text: {result['content']}\n" + f"Found PDF: {file_name}\n"
+                starage_str.append(str_)
+        # # Check if any results were found
+        # if not results:
+        #     print("No results found.")
+        # else:
+        #     # Print the first 2 results
+        #     for i, result in enumerate(results):
+        #         if i >= 2:  # Stop after printing 2 results
+        #             break
+        #         # Get the encoded URL
+        #         encoded_path = result['metadata_storage_path']
+        #         # Correct the padding for Base64 decoding
+        #         padding = 4 - len(encoded_path) % 4
+        #         encoded_path += "=" * padding
+        #         # Base64 decode the URL
+        #         decoded_bytes = base64.b64decode(encoded_path)
+        #         decoded_path = decoded_bytes.decode('utf-8')
+        #         # URL decode the path
+        #         decoded_path = unquote(decoded_path)
+        #         # Extract the file name from the path
+        #         file_name = os.path.basename(decoded_path)
+        #         print(f"Found PDF: {file_name}")
+        #         print(f"Text: {result['content']}\n")
+
+        strage_search = ["Strageから関連ワードを調べました。"] + starage_str
+        
     # return jsonify({'response': response["res"]})
-    return jsonify({'response': response["res"], 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations})
+    return jsonify({'response': response["res"], 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search})
 
 def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
     """

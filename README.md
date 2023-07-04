@@ -48,3 +48,9 @@ GPTの応答の結果を単語に要約し、要約した単語を検索して�
 クリックすると自動で入力欄に入力されます
 
 ![UI_for_GPT_to_chat_recomendbingbing.gif](./UI_for_GPT_to_chat_recomendbingbing.gif)
+
+## Azure Blob Storage に格納されたデータをAzure Cognitive Search で検索
+
+ユーザーの問い合わせと類似する文章をAzure Blob Storage から検索して表示します。
+
+![UI_for_GPT_to_chat_stragefine-imageonline.co-3740539.gif](./UI_for_GPT_to_chat_stragefine-imageonline.co-3740539.gif)

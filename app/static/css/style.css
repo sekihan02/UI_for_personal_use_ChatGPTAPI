@@ -54,6 +54,7 @@ body.light-theme #recommendations-button,
 body.light-theme #wiki-searchations-button,
 body.light-theme #rec-bing-search-button,
 body.light-theme #bing-search-button,
+body.light-theme #strage-search-button,
 body.light-theme #chatform input[type="submit"],
 body.light-theme #settingsform input[type="submit"] {
     background-color: #202f55; 
@@ -70,6 +71,7 @@ body.light-theme #wiki-searchations-button.active,
 body.light-theme #rec-bing-search-button.active,
 body.light-theme #bing-search-button.active,
 body.light-theme #settings-button.active, 
+body.light-theme #strage-search-button.active,
 body.light-theme #recommendations-button.active {
     background-color: #baecff;
     color: #333333;
@@ -253,6 +255,7 @@ h1 {
 #recommendations-button, 
 #wiki-searchations-button,
 #rec-bing-search-button,
+#strage-search-button,
 #bing-search-button {
     /* 共通のスタイルをここに書く */
     border: none;
@@ -286,6 +289,7 @@ h1 {
 #recommend-list li:active,
 #wiki-search-list li:active,
 #bing-search-list li:active,
+#strage-search-list li:active,
 #rec-bing-search-list li:active {
     background-color: #888888;
     color: #ffffff;
@@ -294,6 +298,7 @@ h1 {
 body.light-theme #recommend-list li:active,
 body.light-theme #wiki-search-list li:active,
 body.light-theme #bing-search-list li:active,
+body.light-theme #strage-search-list li:active,
 body.light-theme #rec-bing-search-list li:active {
     background-color: #bbbbbb;
     color: #000000;
@@ -302,6 +307,7 @@ body.light-theme #rec-bing-search-list li:active {
 #recommend-list li, 
 #wiki-search-list li,
 #bing-search-list li,
+#strage-search-list li,
 #rec-bing-search-list li {
     cursor: pointer;
 }
@@ -311,6 +317,7 @@ body.light-theme #rec-bing-search-list li:active {
 #recommendations-button.active, 
 #wiki-searchations-button.active,
 #bing-search-button.active,
+#strage-search-button.active,
 #rec-bing-search-button.active {
     /* アクティブなタブのスタイル */
     background-color: #dcf6ff;
@@ -347,6 +354,7 @@ body.light-theme #rec-bing-search-list li:active {
 #recommend-content,
 #wiki-search-content,
 #bing-search-content,
+#strage-search-button,
 #rec-bing-search-content {
     overflow-wrap: break-word;
     overflow-y: auto;
