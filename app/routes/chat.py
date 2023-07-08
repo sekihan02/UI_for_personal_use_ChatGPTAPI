@@ -1,19 +1,34 @@
 import os
 import ast
+import io
 # import base64
 import requests
+from tqdm import tqdm
+from glob import glob
+import numpy as np
+import pandas as pd
+
+from PyPDF2 import PdfReader
+import pdfplumber
+
 from urllib.parse import unquote
 from flask import Blueprint, render_template
 from flask import Flask, request, jsonify
 from flask import current_app as app
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+
 import openai
+from openai.embeddings_utils import get_embedding, cosine_similarity
+
 import wikipedia
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.chains import SequentialChain
+
+from sklearn.metrics.pairwise import cosine_similarity as cs
 
 chat_bp = Blueprint('chat', __name__)
 
@@ -24,8 +39,8 @@ settings = {
     'api_key': '',
     'bing_search_v7_subscription_key': '',
     'bing_search_v7_endpoint': 'https://api.bing.microsoft.com',
-    'search_service_name': 'txt-search',
-    'index_name': 'azureblob-index-pdf',
+    'search_service_name': 'text-embedding-ada-002',
+    'index_name': 'pdf-1page',
     'strage_search_key': '',
 }
 
@@ -128,6 +143,7 @@ class SimpleMemory:
 # 8件のメッセージを記憶するように設定
 memory = SimpleMemory(max_length=8)
 
+
 @chat_bp.route('/get_response', methods=['POST'])
 def get_response():
     global should_recommend
@@ -136,6 +152,7 @@ def get_response():
     global should_recommend_rec_bing  # 追加
     global should_strage_search  # 追加
 
+    res = ""
     recommendations = ""
     rec_bing_search = ""
     strage_search = ""
@@ -185,7 +202,8 @@ def get_response():
     response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
 
     # メモリに新しい会話のペアを追加
-    memory.add_pair(message, response["res"])
+    res = response["res"]
+    memory.add_pair(message, res)
 
     # RecommendのMaking Recommendationsのチェックがあったら
     if should_recommend:
@@ -212,7 +230,7 @@ def get_response():
             output_variables=["recommend"],
             verbose=True
         )
-        q_recommend = res_recchain({"response": response["res"]})
+        q_recommend = res_recchain({"response": res})
         recommendations = ["次に推奨される質問は次のようなものが考えられます。"] + q_recommend["recommend"].split('\n')
 
         # return jsonify({'response': response['res'], 'recommendations': recommendations})
@@ -256,7 +274,7 @@ def get_response():
             output_variables=["keywords"],
             verbose=True
         )
-        keywords = keyword_recchain({"response": response["res"]})
+        keywords = keyword_recchain({"response": res})
         # 文字列をPythonのリストに変換
         keyword_list = keywords["keywords"].split(' ')
         
@@ -309,7 +327,7 @@ def get_response():
             concatenated_snippets = separator.join(snippets)
             concatenated_snippets_list.append(concatenated_snippets)
             
-        summary_bing = summary_recchain({"response": response["res"], "bing_search": concatenated_snippets_list})
+        summary_bing = summary_recchain({"response": res, "bing_search": concatenated_snippets_list})
         
         rec_bing_search = ["次に推奨される質問は次のようなものが考えられます。"] + summary_bing["summary_list"].split('\n')
         # rec_bing_search = ["次に推奨される質問は次のようなものが考えられます。"] + "てすと\nです\ntest\ntest\ntest".split('\n')
@@ -355,7 +373,7 @@ def get_response():
             output_variables=["keywords"],
             verbose=True
         )
-        keywords = keyword_recchain({"response": response["res"]})
+        keywords = keyword_recchain({"response": res})
         # 文字列をPythonのリストに変換
         keyword_list = keywords["keywords"].split(' ')
         
@@ -452,7 +470,7 @@ def get_response():
             output_variables=["lang_list"],
             verbose=True
         )
-        list_lang = list_recchain({"response": response["res"]})
+        list_lang = list_recchain({"response": res})
         # 文字列をPythonのリストに変換
         lang_list = list_lang["lang_list"].split(' ')
         
@@ -492,67 +510,63 @@ def get_response():
         wiki_search = ["関連ワードを調査しました。"] + summary_wiki["summary_list"].split('\n')
 
         # return jsonify({'response': response['res'], 'wiki_search': wiki_search})
-        
+    # Storageから検索を行うかどうかの判定
     if should_strage_search:
-        search_service_name = settings['search_service_name']
-        index_name = settings['index_name']
-        api_key = settings['strage_search_key']
+        # 埋め込みベクトルモデル
+        embedding_model = settings['search_service_name']
+        # Storageの名前
+        container_name = settings['index_name']
+        # Storage接続文字列
+        connection_string = settings['strage_search_key']
+        # BlobServiceClientを作成（Azure Storageへの接続クライアント）
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
-        # Create a client
-        credential = AzureKeyCredential(api_key)
-        endpoint = f"https://{search_service_name}.search.windows.net"
-        search_client = SearchClient(endpoint, index_name, credential)
+        # コンテナ内のBlobのリストを取得
+        blob_list = blob_service_client.get_container_client(container_name).list_blobs()
 
-        # Get the keyword from the user
-        keyword = response["res"]
+        # テキストとそのコサイン類似度を格納するリストを初期化
+        texts_and_similarities = []
+        # OpenAIのAPIを使用してキーワードを埋め込みベクトルに変換
+        response = openai.Embedding.create(input=message, model="text-embedding-ada-002")
+        keyword_embedding = response['data'][0]['embedding']
 
-        # Search the PDFs with the keyword
-        results = search_client.search(search_text=keyword)
+        # コンテナ内の各Blobに対してループ処理
+        for blob in blob_list:
+            # Blobのクライアントを作成（特定のBlobにアクセスするためのクライアント）
+            blob_client = blob_service_client.get_blob_client(container_name, blob.name)
 
-        # Check if any results were found
-        starage_str = []
-        if not results:
-            print("No results found.")
-        else:
-            # Print the first 2 results
-            for i, result in enumerate(results):
-                if i >= 2:  # Stop after printing 2 results
-                    break
-                # Get the encoded URL
-                encoded_path = result['metadata_storage_path']
-                # URL decode the path
-                decoded_path = unquote(encoded_path)
-                # Extract the file name from the path
-                file_name = os.path.basename(decoded_path)
-                str_ = f"Text: {result['content']}\n" + f"Found PDF: {file_name}\n"
-                starage_str.append(str_)
-        # # Check if any results were found
-        # if not results:
-        #     print("No results found.")
-        # else:
-        #     # Print the first 2 results
-        #     for i, result in enumerate(results):
-        #         if i >= 2:  # Stop after printing 2 results
-        #             break
-        #         # Get the encoded URL
-        #         encoded_path = result['metadata_storage_path']
-        #         # Correct the padding for Base64 decoding
-        #         padding = 4 - len(encoded_path) % 4
-        #         encoded_path += "=" * padding
-        #         # Base64 decode the URL
-        #         decoded_bytes = base64.b64decode(encoded_path)
-        #         decoded_path = decoded_bytes.decode('utf-8')
-        #         # URL decode the path
-        #         decoded_path = unquote(decoded_path)
-        #         # Extract the file name from the path
-        #         file_name = os.path.basename(decoded_path)
-        #         print(f"Found PDF: {file_name}")
-        #         print(f"Text: {result['content']}\n")
+            # Azure StorageからCSVファイルをダウンロード
+            download_stream = blob_client.download_blob().readall()
+            df = pd.read_csv(io.StringIO(download_stream.decode('utf-8')))
 
-        strage_search = ["Strageから関連ワードを調べました。"] + starage_str
-        
-    # return jsonify({'response': response["res"]})
-    return jsonify({'response': response["res"], 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search})
+            # 'embedding'列をリストに戻す
+            df['embedding'] = df['embedding'].apply(lambda x: list(map(float, x.strip('[]').split(', '))))
+
+            # DataFrameの各行に対してループ処理
+            for _, row in df.iterrows():
+                # キーワードの埋め込みベクトルとテキストの埋め込みベクトルの間のコサイン類似度を計算
+                cosine_sim = cs([keyword_embedding], [row['embedding']])[0][0]
+                # COS類似度が0.8以上の場合のみ格納
+                if cosine_sim > 0.8:
+                    # テキスト、そのコサイン類似度、ページ番号、ファイル名をリストに追加
+                    texts_and_similarities.append((cosine_sim, row['text'], row['page_num'], blob.name))
+
+            # リストをコサイン類似度の降順にソート
+            texts_and_similarities.sort(reverse=True)
+            starage_str = []
+            # キーワードと最もコサイン類似度が高いテキストのファイル名、ページ番号、テキストを出力
+            range_sim_word = min(3, len(texts_and_similarities))
+            for i in range(range_sim_word):
+                # COS類似度が0.6以上の場合のみ格納
+                if texts_and_similarities[i][0] > 0.6:
+                    starage_str.append(f'File Name:{texts_and_similarities[i][3]}\nPage Number: {texts_and_similarities[i][2]}\n Text: {texts_and_similarities[i][1]}\n')
+            # texts_and_similaritiesが空かどうかを確認
+            if not starage_str:
+                starage_str.append("類似文章が見当たりませんでした。")
+            strage_search = ["Strageから関連文章を調べました。"] + starage_str
+
+    # return jsonify({'response': res})
+    return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search})
 
 def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
     """
@@ -600,29 +614,6 @@ def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
             all_results.extend(results)
         except Exception as ex:
             print(f"Error for keyword {keyword}: {str(ex)}")
-
-    # params = {'q': keywords, 'count': num_results, 'mkt': lang}
-    # headers = {'Ocp-Apim-Subscription-Key': subscription_key}
-    # try:
-        # response = requests.get(endpoint, headers=headers, params=params)
-        # response.raise_for_status()
-
-        # json_response = response.json()
-        # results = []
-        # if 'webPages' in json_response:
-            # for item in json_response['webPages']['value']:
-                # results.append({
-                    # 'keyword': keywords,
-                    # 'name': item['name'],
-                    # 'url': item['url'],
-                    # 'snippet': item['snippet']
-                # })
-        # else:
-            # print(f"No web pages found for keyword {keyword}")
-        # all_results.extend(results)
-    # except Exception as ex:
-        # print(f"Error for keyword {keyword}: {str(ex)}")
-        
     return all_results
 
 
