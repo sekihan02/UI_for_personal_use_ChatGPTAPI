@@ -36,8 +36,11 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     var data = await response.json();
 
     // Display the response
-    chatBox.innerHTML += `<p class="gpt-text">GPT-3: ${data.response.replace(/\n/g, '<br>')}</p>`;
-    
+    chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${data.response.replace(/\n/g, '<br>')}</p>`;
+    // This part is inside the function that handles the server response.
+    // Assuming that "data" is the variable that contains the server response.
+    document.getElementById("token-count").innerText = "Tokens: " + data.output_counter;
+
     // If there are recommendations, display them
     if (data.recommendations) {
         var recommendList = document.getElementById('recommend-list');

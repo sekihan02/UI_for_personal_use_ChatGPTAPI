@@ -21,6 +21,7 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 import openai
 from openai.embeddings_utils import get_embedding, cosine_similarity
+import tiktoken
 
 import wikipedia
 from langchain.chat_models import ChatOpenAI
@@ -143,6 +144,13 @@ class SimpleMemory:
 # 8件のメッセージを記憶するように設定
 memory = SimpleMemory(max_length=8)
 
+# encoding = tiktoken.encoding_for_model(settings['model'])
+output_counter = 0  # Add a global counter for output
+def num_tokens_from_string(string: str, encoding_name: str) -> int:
+    """Returns the number of tokens in a text string."""
+    encoding = tiktoken.encoding_for_model(encoding_name)
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
 
 @chat_bp.route('/get_response', methods=['POST'])
 def get_response():
@@ -151,6 +159,8 @@ def get_response():
     global should_recommend_bing  # 追加
     global should_recommend_rec_bing  # 追加
     global should_strage_search  # 追加
+    global output_counter  # 追加
+    counter = 0
 
     res = ""
     recommendations = ""
@@ -204,7 +214,9 @@ def get_response():
     # メモリに新しい会話のペアを追加
     res = response["res"]
     memory.add_pair(message, res)
-
+    
+    counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
+    counter += num_tokens_from_string(res, settings['model'])
     # RecommendのMaking Recommendationsのチェックがあったら
     if should_recommend:
         rec_template = """あなたは回答を入力として受け取り、その回答を元に次に質問したり、問い合わせたりした方がいい質問を5つ箇条書きで生成してください
@@ -233,6 +245,8 @@ def get_response():
         q_recommend = res_recchain({"response": res})
         recommendations = ["次に推奨される質問は次のようなものが考えられます。"] + q_recommend["recommend"].split('\n')
 
+        counter += num_tokens_from_string(rec_temp.format(response=["次に推奨される質問は次のようなものが考えられます。"] + q_recommend["recommend"].split('\n')), settings['model'])
+        counter += num_tokens_from_string(q_recommend["recommend"], settings['model'])
         # return jsonify({'response': response['res'], 'recommendations': recommendations})
 
     # Bing Suggestのチェックがあったら
@@ -334,6 +348,8 @@ def get_response():
 
         # return jsonify({'response': response['res'], 'rec_bing_search': rec_bing_search})
 
+        counter += num_tokens_from_string(bing_temp.format(response=res, bing_search=concatenated_snippets_list), settings['model'])
+        counter += num_tokens_from_string(summary_bing["summary_list"], settings['model'])
     # Bing Searchのチェックがあったら
     if should_recommend_bing:    
         word_list_template = """
@@ -431,6 +447,9 @@ def get_response():
 
         # return jsonify({'response': response['res'], 'bing_search': bing_search})
 
+        counter += num_tokens_from_string(bing_temp.format(bing_search=concatenated_snippets_list), settings['model'])
+        counter += num_tokens_from_string(summary_bing["summary_list"], settings['model'])
+        
     # WikiSearchのMaking Wiki Searchのチェックがあったら
     if should_recommend_wiki:
         list_template = """あなたは回答を入力として受け取り、回答を表す3つ単語に変換してください。
@@ -510,6 +529,9 @@ def get_response():
         wiki_search = ["関連ワードを調査しました。"] + summary_wiki["summary_list"].split('\n')
 
         # return jsonify({'response': response['res'], 'wiki_search': wiki_search})
+        
+        counter += num_tokens_from_string(wiki_temp.format(wiki_search=articles_content), settings['model'])
+        counter += num_tokens_from_string(summary_wiki["summary_list"], settings['model'])
     # Storageから検索を行うかどうかの判定
     if should_strage_search:
         # 埋め込みベクトルモデル
@@ -564,9 +586,12 @@ def get_response():
             if not starage_str:
                 starage_str.append("類似文章が見当たりませんでした。")
             strage_search = ["Strageから関連文章を調べました。"] + starage_str
+        
+        counter += num_tokens_from_string("\n".join(starage_str), settings['model'])
 
     # return jsonify({'response': res})
-    return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search})
+    output_counter += counter
+    return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search, "output_counter": output_counter})
 
 def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
     """

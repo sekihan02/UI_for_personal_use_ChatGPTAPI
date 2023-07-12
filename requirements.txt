@@ -8,6 +8,7 @@ scikit-learn
 flask
 requests
 openai==0.27.8
+tiktoken
 langchain==0.0.214
 wikipedia==1.4.0
 azure-search-documents==11.3.0

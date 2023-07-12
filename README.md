@@ -9,8 +9,9 @@ Azure Openai には非対応
 - Enterで改行
 - 背景色の切り替え機能
 - 短期記憶を追加
+- 使用トークン数の出力
 
-![UI_for_GPT_to_chat.gif](./UI_for_GPT_to_chat.gif)
+![UI_for_GPT_to_intro.gif](./UI_for_GPT_to_intro.gif)
 
 ## 次の推奨質問の表示
 

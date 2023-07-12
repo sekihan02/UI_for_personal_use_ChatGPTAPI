@@ -16,7 +16,15 @@
         </style>
     </head>
 <body>
-    <h1>ChatGPT 📝</h1>
+    <h1 style="display: inline;">ChatGPT 📝</h1>
+    <!-- <div style="display: flex; align-items: baseline;"> -->
+        <!-- <h1 style="display: inline;">ChatGPT 📝</h1> -->
+        <!-- <h2 id="token-count" style="display: inline; margin-left: 20px;">Tokens: 0</h2> -->
+    <!-- </div> -->
+    <div style="position: absolute; left: 0;">
+        <h2 id="token-count" style="display: inline">Tokens: 0</h2>
+    </div>
+    
     <button id="theme-switcher" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Switch Theme</button>
     <div id="app-container">
         <div id="chat-settings-container">
@@ -116,7 +124,7 @@
         </div>
         
     </div>
-
+    
     <script src="/static/js/script.js"></script>
 </body>
 </html>
