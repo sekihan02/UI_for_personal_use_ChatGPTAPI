@@ -1,130 +1,154 @@
 <!DOCTYPE html>
+
 <html>
-    <head>
-        <title>Chat with GPT-3</title>
-        <link rel="stylesheet" type="text/css" href="/static/css/style.css">
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-        <style>
-        body {
-            font-family: 'Yu Gothic', 'Hiragino Kaku Gothic Pro', Meiryo, sans-serif;
-            font-weight: bold;
-        }
-        button, input {
-            font-weight: bold;
-        }
-        </style>
-    </head>
+<head>
+<title>Chat with GPT-3</title>
+<link href="/static/css/style.css" rel="stylesheet" type="text/css"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+<style>
+		body {
+			font-family: 'Yu Gothic', 'Hiragino Kaku Gothic Pro', Meiryo, sans-serif;
+			font-weight: bold;
+		}
+		button, input {
+			font-weight: bold;
+		}
+		.toggle {
+			cursor: pointer;
+		}
+		.content {
+			display: none;
+		}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+	$(document).ready(function(){
+		$(".toggle").click(function(){
+			$(this).next(".content").slideToggle("slow");
+		});
+	});
+</script>
+</head>
 <body>
-    <h1 style="display: inline;">ChatGPT 📝</h1>
-    <!-- <div style="display: flex; align-items: baseline;"> -->
-        <!-- <h1 style="display: inline;">ChatGPT 📝</h1> -->
-        <!-- <h2 id="token-count" style="display: inline; margin-left: 20px;">Tokens: 0</h2> -->
-    <!-- </div> -->
-    <div style="position: absolute; left: 0;">
-        <h2 id="token-count" style="display: inline">Tokens: 0</h2>
+<h1 style="display: inline;">ChatGPT 📝</h1>
+<!-- <div style="display: flex; align-items: baseline;"> -->
+<!-- <h1 style="display: inline;">ChatGPT 📝</h1> -->
+<!-- <h2 id="token-count" style="display: inline; margin-left: 20px;">Tokens: 0</h2> -->
+<!-- </div> -->
+<div style="position: absolute; left: 0;">
+<h2 id="token-count" style="display: inline">Tokens: 0</h2>
+</div>
+<button id="theme-switcher" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Switch Theme</button>
+<div id="app-container">
+<div id="chat-settings-container">
+<div id="chatbox">
+<!-- Chat messages will be inserted here -->
+</div>
+<form id="chatform">
+<div id="input-container">
+<textarea id="message" placeholder="Type your message here"></textarea>
+<input type="submit" value="Send"/>
+</div>
+</form>
+</div>
+<div id="settings-container">
+<div id="tab-buttons">
+<button id="settings-button">Settings</button>
+<button id="recommendations-button">Suggest</button>
+<!-- <button id="rec-bing-search-button">Bing Suggest</button> --> <!-- 追加 -->
+<!-- <button id="wiki-searchations-button">Wiki Find</button> -->
+<!-- <button id="bing-search-button">Bing Find</button> --> <!-- 追加 -->
+<!-- <button id="strage-search-button">Strage Find</button> --> <!-- 追加 -->
+</div>
+<div id="settings-content">
+<form id="settingsform">
+<label for="model">Model:</label>
+<input id="model" name="model" type="text" value="gpt-3.5-turbo-0613"/>
+<label for="temperature">Temperature:</label>
+<input id="temperature" max="1.0" min="0.0" required="" step="0.01" type="number" value="0.8"/>
+<label for="api_key">API Key:</label>
+<div class="password-container">
+<input id="api_key" placeholder="API Key" type="password"/>
+<i aria-hidden="true" class="toggle-password fa fa-eye" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
+</div>
+<div>
+<label for="bing_search_v7_subscription_key">Bing Search V7 Subscription Key:</label>
+<div class="password-container">
+<input id="bing_search_v7_subscription_key" placeholder="Subscription Key" type="password"/>
+<i aria-hidden="true" class="toggle-password fa fa-eye" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
+</div>
+</div>
+<!-- Bing Search V7 Endpointの設定項目 -->
+<div>
+<label for="bing_search_v7_endpoint">Bing Search V7 Endpoint:</label>
+<input ,="" id="bing_search_v7_endpoint" name="bing_search_v7_endpoint" type="text" value="https://api.bing.microsoft.com"/>
+</div>
+<!-- 埋め込みベクトルモデルの設定項目 -->
+<label for="search_service_name">Embedding Model Name:</label>
+<input id="search_service_name" name="search_service_name" type="text" value="text-embedding-ada-002"/>
+<label for="index_name">Strage Container:</label>
+<input id="index_name" name="index_name" type="text" value="pdf-1page"/>
+<div>
+<label for="strage_search_key">Strage Key:</label>
+<div class="password-container">
+<input id="strage_search_key" placeholder="strage search key" type="password"/>
+<i aria-hidden="true" class="toggle-password fa fa-eye" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
+</div>
+</div>
+<input type="submit" value="Update Settings"/>
+</form>
+</div>
+<div id="recommend-content" style="display: none;">
+<!-- ここにRecommendタブの内容を追加できます -->
+<input id="recommend-checkbox" type="checkbox"/>
+<label for="recommend-checkbox" style="word-wrap: break-word;">Making Recommendations</label>
+<ul id="recommend-list">
+</ul></div>
+<div id="rec-bing-search-content" style="display: none;"> <!-- 追加 -->
+<!-- ここにBing SearchRecommendタブの内容を追加できます -->
+<input id="rec-bing-search-checkbox" type="checkbox"/>
+<label for="rec-bing-search-checkbox" style="word-wrap: break-word;">Enable Recommend Bing Search</label>
+<ul id="rec-bing-search-list"></ul>
+</div>
+<div id="wiki-search-content" style="display: none;">
+<!-- ここにWikiSearchタブの内容を追加できます -->
+<input id="wiki-search-checkbox" type="checkbox"/>
+<label for="wiki-search-checkbox" style="word-wrap: break-word;">Making Wiki Search</label>
+<ul id="wiki-search-list">
+</ul></div>
+<div id="bing-search-content" style="display: none;"> <!-- 追加 -->
+<!-- ここにBing Searchタブの内容を追加できます -->
+<input id="bing-search-checkbox" type="checkbox"/>
+<label for="bing-search-checkbox" style="word-wrap: break-word;">Enable Bing Search</label>
+<ul id="bing-search-list"></ul>
+</div>
+<div id="strage-search-content" style="display: none;"> <!-- 追加 -->
+<!-- ここにStrage Searchタブの内容を追加できます -->
+<input id="strage-search-checkbox" type="checkbox"/>
+<label for="strage-search-checkbox" style="word-wrap: break-word;">Enable Strage Search</label>
+<ul id="strage-search-list"></ul>
+</div>
+</div>
+</div>
+<div style="border:1px solid; padding: 10px 20px; margin: 10px 0; width: 95%;">
+    <h2 class="toggle">使いすぎないでください</h2>
+    <div class="content">
+        asdfsaf
+        <ul><li>1日3回まで</li></ul>
+        <br><h4>1日<br>M3回まで</h4>
     </div>
-    
-    <button id="theme-switcher" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Switch Theme</button>
-    <div id="app-container">
-        <div id="chat-settings-container">
-            <div id="chatbox">
-                <!-- Chat messages will be inserted here -->
-            </div>
-            <form id="chatform">
-                <div id="input-container">
-                    <textarea id="message" placeholder="Type your message here"></textarea>
-                    <input type="submit" value="Send">
-                </div>
-            </form>
-        </div>
-        <div id="settings-container">
-            <div id="tab-buttons">
-                <button id="settings-button">Settings</button>
-                <button id="recommendations-button">Suggest</button>
-                <button id="rec-bing-search-button">Bing Suggest</button>    <!-- 追加 -->
-                <button id="wiki-searchations-button">Wiki Find</button>
-                <button id="bing-search-button">Bing Find</button>    <!-- 追加 -->
-                <button id="strage-search-button">Strage Find</button>    <!-- 追加 -->
-            </div>
-            <div id="settings-content">
-                <form id="settingsform">
-                    <label for="model">Model:</label>
-                    <input type="text" id="model" name="model" value="gpt-3.5-turbo-0613">
-            
-                    <label for="temperature">Temperature:</label>
-                    <input type="number" step="0.01" min="0.0" max="1.0" id="temperature" value="0.8" required>
-                    <label for="api_key">API Key:</label>
-                    <div class="password-container">
-                        <input type="password" id="api_key" placeholder="API Key">
-                        <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
-                    </div>
-                    
-                    <div>
-                        <label for="bing_search_v7_subscription_key">Bing Search V7 Subscription Key:</label>
-                        <div class="password-container">
-                            <input type="password" id="bing_search_v7_subscription_key" placeholder="Subscription Key">
-                            <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
-                        </div>
-                    </div>
-                
-                    <!-- Bing Search V7 Endpointの設定項目 -->
-                    <div>
-                        <label for="bing_search_v7_endpoint">Bing Search V7 Endpoint:</label>
-                        <input type="text" id="bing_search_v7_endpoint" name="bing_search_v7_endpoint", value="https://api.bing.microsoft.com">
-                    </div>
 
-                    <!-- 埋め込みベクトルモデルの設定項目 -->
-                    <label for="search_service_name">Embedding Model Name:</label>
-                    <input type="text" id="search_service_name" name="search_service_name" value="text-embedding-ada-002">
-                    <label for="index_name">Strage Container:</label>
-                    <input type="text" id="index_name" name="index_name" value="pdf-1page">
-                    
-                    <div>
-                        <label for="strage_search_key">Strage Key:</label>
-                        <div class="password-container">
-                            <input type="password" id="strage_search_key" placeholder="strage search key">
-                            <i class="toggle-password fa fa-eye" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #ffffff; cursor: pointer;"></i>
-                        </div>
-                    </div>
-
-                    <input type="submit" value="Update Settings">
-                </form>
-            </div>
-            <div id="recommend-content" style="display: none;">
-                <!-- ここにRecommendタブの内容を追加できます -->
-                <input type="checkbox" id="recommend-checkbox">
-                <label for="recommend-checkbox" style="word-wrap: break-word;">Making Recommendations</label>
-                <ul id="recommend-list"> 
-            </div>
-            <div id="rec-bing-search-content" style="display: none;">    <!-- 追加 -->
-                <!-- ここにBing SearchRecommendタブの内容を追加できます -->
-                <input type="checkbox" id="rec-bing-search-checkbox">
-                <label for="rec-bing-search-checkbox" style="word-wrap: break-word;">Enable Recommend Bing Search</label>
-                <ul id="rec-bing-search-list"></ul>
-            </div>
-            <div id="wiki-search-content" style="display: none;">
-                <!-- ここにWikiSearchタブの内容を追加できます -->
-                <input type="checkbox" id="wiki-search-checkbox">
-                <label for="wiki-search-checkbox" style="word-wrap: break-word;">Making Wiki Search</label>
-                <ul id="wiki-search-list"> 
-            </div>
-            <div id="bing-search-content" style="display: none;">    <!-- 追加 -->
-                <!-- ここにBing Searchタブの内容を追加できます -->
-                <input type="checkbox" id="bing-search-checkbox">
-                <label for="bing-search-checkbox" style="word-wrap: break-word;">Enable Bing Search</label>
-                <ul id="bing-search-list"></ul>
-            </div>
-            <div id="strage-search-content" style="display: none;">    <!-- 追加 -->
-                <!-- ここにStrage Searchタブの内容を追加できます -->
-                <input type="checkbox" id="strage-search-checkbox">
-                <label for="strage-search-checkbox" style="word-wrap: break-word;">Enable Strage Search</label>
-                <ul id="strage-search-list"></ul>
-            </div>
-        </div>
-        
+    <h2 class="toggle">利用ルール</h2>
+    <div class="content">
+        <ul>
+            <li>1. 誹謗中傷はダメ</li>
+            <li>2. 社外秘データを使わないでね</li>
+        </ul>
     </div>
-    
-    <script src="/static/js/script.js"></script>
+</div>
+
+<script src="/static/js/script.js"></script>
 </body>
 </html>
