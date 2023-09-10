@@ -42,6 +42,7 @@
             <div id="tab-buttons">
                 <button id="settings-button">Settings</button>
                 <button id="recommendations-button">Suggest</button>
+                <button id="open-interpreter-button">Open interpreter</button>    <!-- 追加 -->
                 <button id="rec-bing-search-button">Bing Suggest</button>    <!-- 追加 -->
                 <button id="wiki-searchations-button">Wiki Find</button>
                 <button id="bing-search-button">Bing Find</button>    <!-- 追加 -->
@@ -90,6 +91,12 @@
 
                     <input type="submit" value="Update Settings">
                 </form>
+            </div>
+            <div id="open-interpreter-content" style="display: none;">
+                <!-- ここにopen-interpreterタブの内容を追加できます -->
+                <input type="checkbox" id="open-interpreter-checkbox">
+                <label for="open-interpreter-checkbox" style="word-wrap: break-word;">Open interpreter</label>
+                <ul id="open-interpreter-list"> 
             </div>
             <div id="recommend-content" style="display: none;">
                 <!-- ここにRecommendタブの内容を追加できます -->

@@ -51,6 +51,7 @@ body.light-theme .gpt-text {
 /* 追加 */
 body.light-theme #settings-button,
 body.light-theme #recommendations-button,
+body.light-theme #open-interpreter-button,
 body.light-theme #wiki-searchations-button,
 body.light-theme #rec-bing-search-button,
 body.light-theme #bing-search-button,
@@ -72,6 +73,7 @@ body.light-theme #rec-bing-search-button.active,
 body.light-theme #bing-search-button.active,
 body.light-theme #settings-button.active, 
 body.light-theme #strage-search-button.active,
+body.light-theme #open-interpreter-button.active,
 body.light-theme #recommendations-button.active {
     background-color: #baecff;
     color: #333333;
@@ -253,6 +255,7 @@ h1 {
 /* 追加 */
 #settings-button, 
 #recommendations-button, 
+#open-interpreter-button, 
 #wiki-searchations-button,
 #rec-bing-search-button,
 #strage-search-button,
@@ -287,6 +290,7 @@ h1 {
 /* recommend-buttonをクリックした時の処理 */
 /* 追加 */
 #recommend-list li:active,
+#open-interpreter-list li:active,
 #wiki-search-list li:active,
 #bing-search-list li:active,
 #strage-search-list li:active,
@@ -296,6 +300,7 @@ h1 {
 }
 /* 追加 */
 body.light-theme #recommend-list li:active,
+body.light-theme #open-interpreter-list li:active,
 body.light-theme #wiki-search-list li:active,
 body.light-theme #bing-search-list li:active,
 body.light-theme #strage-search-list li:active,
@@ -305,6 +310,7 @@ body.light-theme #rec-bing-search-list li:active {
 }
 
 #recommend-list li, 
+#open-interpreter-list li, 
 #wiki-search-list li,
 #bing-search-list li,
 #strage-search-list li,
@@ -315,6 +321,7 @@ body.light-theme #rec-bing-search-list li:active {
 /* 追加 */
 #settings-button.active, 
 #recommendations-button.active, 
+#open-interpreter-button.active, 
 #wiki-searchations-button.active,
 #bing-search-button.active,
 #strage-search-button.active,
@@ -352,6 +359,7 @@ body.light-theme #rec-bing-search-list li:active {
 }
 /* 追加 */
 #recommend-content,
+#open-interpreter-content,
 #wiki-search-content,
 #bing-search-content,
 #strage-search-button,

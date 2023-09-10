@@ -22,6 +22,7 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 import openai
 from openai.embeddings_utils import get_embedding, cosine_similarity
 import tiktoken
+import interpreter
 
 import wikipedia
 from langchain.chat_models import ChatOpenAI
@@ -47,6 +48,8 @@ settings = {
 
 # Making Recommendationsのチェック取得
 should_recommend = False  # Initial value
+# Open Interpreterのチェック取得
+should_open_interpreter = False  # Initial value
 # Making Wiki Recommendationsのチェック取得
 should_recommend_wiki = False  # Initial value
 # Making Bing Search Recommendationsのチェック取得
@@ -119,6 +122,13 @@ def update_strage_search():
     should_strage_search = data['should_strage_search']
     return jsonify({'status': 'success'})
 
+@chat_bp.route('/open_interpreter', methods=['POST'])
+def open_interpreter():
+    global should_open_interpreter
+    data = request.json
+    should_open_interpreter = data['should_open_interpreter']
+    return jsonify({'status': 'success'})
+
 class SimpleMemory:
     def __init__(self, max_length=10):
         self.memory = []
@@ -160,6 +170,7 @@ def get_response():
     global should_recommend_rec_bing  # 追加
     global should_strage_search  # 追加
     global output_counter  # 追加
+    global should_open_interpreter  # 追加
     counter = 0
 
     res = ""
@@ -209,14 +220,46 @@ def get_response():
         output_variables=["res"],
         verbose=True
     )
-    response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
-
-    # メモリに新しい会話のペアを追加
-    res = response["res"]
-    memory.add_pair(message, res)
     
-    counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
-    counter += num_tokens_from_string(res, settings['model'])
+    # Open Interpreterのチェックがあったら
+    if should_open_interpreter:
+        print(should_open_interpreter)
+        # Paste your OpenAI API key below.
+        interpreter.api_key = settings['api_key']
+        interpreter.auto_run = True
+        interpreter.reset()
+        interpreter.model = settings['model']
+        
+        inter = str(interpreter.chat(message, return_messages=True))
+        # inter = interpreter.chat(message, return_messages=True)
+        # contents = [item['content'] for item in inter]
+        
+        # print("\n".join(contents))
+        # res = contents[1:]
+        # res = []
+
+        # for item in inter:
+        #     # 'content'の値がある場合に取得
+        #     if 'content' in item and item['content'] is not None:
+        #         res.append(item['content'])
+            
+        #     # 'code'の値を取得
+        #     if 'function_call' in item and 'parsed_arguments' in item['function_call'] and 'code' in item['function_call']['parsed_arguments']:
+        #         res.append(item['function_call']['parsed_arguments']['code'])
+        res = inter
+        counter += num_tokens_from_string(res, settings['model'])
+
+        
+        # counter += num_tokens_from_string("\n".join(interpret), settings['model'])
+    else:
+        response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
+
+        # メモリに新しい会話のペアを追加
+        res = response["res"]
+        memory.add_pair(message, res)
+    
+        counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
+        counter += num_tokens_from_string(res, settings['model'])
     # RecommendのMaking Recommendationsのチェックがあったら
     if should_recommend:
         rec_template = """あなたは回答を入力として受け取り、その回答を元に次に質問したり、問い合わせたりした方がいい質問を5つ箇条書きで生成してください

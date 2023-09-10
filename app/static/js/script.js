@@ -231,6 +231,7 @@ document.getElementById('settingsform').addEventListener('submit', async functio
 document.getElementById('settings-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.add('active');
     document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('open-interpreter-button').classList.remove('active');
     document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
@@ -238,6 +239,7 @@ document.getElementById('settings-button').addEventListener('click', function() 
     document.getElementById('strage-search-content').style.display = 'none';
     document.getElementById('settings-content').style.display = 'block';
     document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('open-interpreter-content').style.display = 'none';
     document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
@@ -268,6 +270,7 @@ document.getElementById('recommend-checkbox').addEventListener('change', async f
 document.getElementById('recommendations-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('recommendations-button').classList.add('active');
+    document.getElementById('open-interpreter-button').classList.remove('active');
     document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
@@ -275,6 +278,7 @@ document.getElementById('recommendations-button').addEventListener('click', func
     document.getElementById('strage-search-content').style.display = 'none';
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'block';
+    document.getElementById('open-interpreter-content').style.display = 'none';
     document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
@@ -306,12 +310,14 @@ document.getElementById('wiki-searchations-button').addEventListener('click', fu
     document.getElementById('wiki-searchations-button').classList.add('active');
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('open-interpreter-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('strage-search-button').classList.remove('active');
     document.getElementById('strage-search-content').style.display = 'none';
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('open-interpreter-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'block';
     document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
@@ -337,6 +343,7 @@ document.querySelectorAll('.toggle-password').forEach(function(toggle) {
 document.getElementById('bing-search-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('open-interpreter-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.add('active');
     document.getElementById('rec-bing-search-button').classList.remove('active');
@@ -344,6 +351,7 @@ document.getElementById('bing-search-button').addEventListener('click', function
     document.getElementById('strage-search-content').style.display = 'none';
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('open-interpreter-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
     document.getElementById('rec-bing-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'block';
@@ -374,6 +382,7 @@ document.getElementById('bing-search-checkbox').addEventListener('change', async
 document.getElementById('rec-bing-search-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('open-interpreter-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('rec-bing-search-button').classList.add('active');
@@ -381,6 +390,7 @@ document.getElementById('rec-bing-search-button').addEventListener('click', func
     document.getElementById('strage-search-content').style.display = 'none';
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('open-interpreter-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
     document.getElementById('rec-bing-search-content').style.display = 'block';
@@ -407,12 +417,14 @@ document.getElementById('rec-bing-search-checkbox').addEventListener('change', a
 document.getElementById('strage-search-button').addEventListener('click', function() {
     document.getElementById('settings-button').classList.remove('active');
     document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('open-interpreter-button').classList.remove('active');
     document.getElementById('wiki-searchations-button').classList.remove('active');
     document.getElementById('bing-search-button').classList.remove('active');
     document.getElementById('rec-bing-search-button').classList.remove('active');
     document.getElementById('strage-search-button').classList.add('active');
     document.getElementById('settings-content').style.display = 'none';
     document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('open-interpreter-content').style.display = 'none';
     document.getElementById('wiki-search-content').style.display = 'none';
     document.getElementById('bing-search-content').style.display = 'none';
     document.getElementById('rec-bing-search-content').style.display = 'none';
@@ -437,5 +449,44 @@ document.getElementById('strage-search-checkbox').addEventListener('change', asy
 
     if (data.status === 'success') {
         console.log("Strage Search updated successfully");
+    }
+});
+
+
+document.getElementById('open-interpreter-button').addEventListener('click', function() {
+    document.getElementById('settings-button').classList.remove('active');
+    document.getElementById('recommendations-button').classList.remove('active');
+    document.getElementById('open-interpreter-button').classList.add('active');
+    document.getElementById('wiki-searchations-button').classList.remove('active');
+    document.getElementById('bing-search-button').classList.remove('active');
+    document.getElementById('rec-bing-search-button').classList.remove('active');
+    document.getElementById('strage-search-button').classList.remove('active');
+    document.getElementById('settings-content').style.display = 'none';
+    document.getElementById('recommend-content').style.display = 'none';
+    document.getElementById('open-interpreter-content').style.display = 'block';
+    document.getElementById('wiki-search-content').style.display = 'none';
+    document.getElementById('bing-search-content').style.display = 'none';
+    document.getElementById('rec-bing-search-content').style.display = 'none';
+    document.getElementById('strage-search-content').style.display = 'none';
+});
+
+document.getElementById('open-interpreter-checkbox').addEventListener('change', async function(event) {
+    var should_OpenInterpreter = event.target.checked;
+
+    // shouldRecommendBingの結果をデバッグ
+    // console.log(shouldRecommendBing);
+    // Send the new settings to the server
+    var response = await fetch('/open_interpreter', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({should_open_interpreter: should_OpenInterpreter})
+    });
+
+    var data = await response.json();
+
+    if (data.status === 'success') {
+        console.log("Open_interpreter updated successfully");
     }
 });
