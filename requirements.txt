@@ -15,4 +15,6 @@ azure-search-documents==11.3.0
 azure-storage-blob==12.16.0
 PyPDF2
 pdfplumber
-open-interpreter
+rich 
+litellm 
+tokentrim

@@ -2,6 +2,12 @@ import os
 import ast
 import io
 # import base64
+import litellm
+import tokentrim as tt
+from typing import List, Dict, Union
+import sys
+import ast
+
 import requests
 from tqdm import tqdm
 from glob import glob
@@ -22,7 +28,6 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 import openai
 from openai.embeddings_utils import get_embedding, cosine_similarity
 import tiktoken
-import interpreter
 
 import wikipedia
 from langchain.chat_models import ChatOpenAI
@@ -225,29 +230,11 @@ def get_response():
     if should_open_interpreter:
         print(should_open_interpreter)
         # Paste your OpenAI API key below.
-        interpreter.api_key = settings['api_key']
-        interpreter.auto_run = True
-        interpreter.reset()
-        interpreter.model = settings['model']
-        
-        inter = str(interpreter.chat(message, return_messages=True))
-        # inter = interpreter.chat(message, return_messages=True)
-        # contents = [item['content'] for item in inter]
-        
-        # print("\n".join(contents))
-        # res = contents[1:]
-        # res = []
+        # Let's try to use the updated Interpreter class
+        interpreter = Interpreter()
+        res, counter = interpreter.chat(message)
 
-        # for item in inter:
-        #     # 'content'の値がある場合に取得
-        #     if 'content' in item and item['content'] is not None:
-        #         res.append(item['content'])
-            
-        #     # 'code'の値を取得
-        #     if 'function_call' in item and 'parsed_arguments' in item['function_call'] and 'code' in item['function_call']['parsed_arguments']:
-        #         res.append(item['function_call']['parsed_arguments']['code'])
-        res = inter
-        counter += num_tokens_from_string(res, settings['model'])
+        # counter += num_tokens_from_string(res, settings['model'])
 
         
         # counter += num_tokens_from_string("\n".join(interpret), settings['model'])
@@ -734,3 +721,112 @@ def get_wikipedia_articles_for_keywords(keywords, num_articles=3, lang='ja'):
             print(f"DisambiguationError for keyword {keyword}: {e.options}")  # エラーメッセージを出力
         
     return all_articles  # 全記事情報を返す
+
+class MessageBlock:
+    def __init__(self):
+        self.messages = []
+        self.outputs = []
+        self.choices = []
+        self.completions = []
+        self.image = None
+        self.models = []
+        self.prompts = []
+        self.tokens = 0
+
+    def from_message(self, message):
+        role = message["role"]
+        if role == "system":
+            content = message["content"]
+            self.prompts.append(content["prompt"])
+            self.completions.append(content["completion"])
+            if "model" in content:
+                self.models.append(content["model"])
+            if "usage" in content:
+                self.tokens += content["usage"]["total_tokens"]
+            # Check if "choices" key exists in the content
+            if "choices" in content:
+                self.outputs.append(content["choices"][0]["message"]["content"])
+                if content["choices"][0]["message"]["role"] == "image":
+                    self.image = content["choices"][0]["message"]["content"]
+                else:
+                    self.choices.append(content["choices"][0]["message"]["content"])
+        else:
+            self.messages.append(message["content"])
+
+    def update_from_message(self, message):
+        self.from_message(message)
+        if "models" in message:
+            for model_message in message["models"]:
+                self.from_message(model_message)
+        if "system" in message:
+            self.from_message(message["system"])
+
+    def to_dict(self):
+        return {
+            "models": self.models,
+            "prompts": self.prompts,
+            "completions": self.completions,
+            "tokens": self.tokens,
+            "choices": self.choices,
+            "outputs": self.outputs,
+            "image": self.image
+        }
+
+    def end(self):
+        self.completed = True
+        return self.messages
+class Interpreter:
+    def __init__(self, max_tokens=150):
+        self.messages = []
+        self.initial_prompt = "You are a helpful assistant."
+        self.max_tokens = max_tokens
+        self.temperature = 0.7
+        self.frequency_penalty = 0
+        self.presence_penalty = 0.6
+        self.stop_sequences = ["\n"]
+        self.active_block = None
+        self.completed = False
+
+    def add_message(self, role, content):
+        self.messages.append({"role": role, "content": content})
+
+    def chat(self, prompt_text):
+        # Read the system message content from the file
+        with open('./app/routes/system_message.txt', 'r') as file:
+            system_content = file.read().strip()
+
+        MAX_ATTEMPTS = 3
+        full_response = ""
+        cnt = 0
+        for _ in range(MAX_ATTEMPTS):
+            self.messages = [
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": prompt_text}
+            ]
+
+            # API call simulation
+            res = openai.ChatCompletion.create(
+                model=settings['model'],
+                messages=self.messages[-2:],  # Take the last two messages to avoid token limit
+                temperature=settings['temperature']
+            )
+            
+            response_content = res["choices"][0]["message"]["content"]
+            cnt += res["usage"]["total_tokens"]
+            full_response += response_content
+
+            # Check if the response seems complete or if we need more information
+            # Here, I'm checking if the response ends with a punctuation (indicative of completeness) 
+            # but this can be adapted as needed.
+            if response_content[-1] in ['.', '!', '?']:
+                break
+            else:
+                # If not complete, use the previous response as the next prompt
+                prompt_text = response_content
+
+        return full_response, cnt
+
+    def reset(self):
+        self.messages = []
+        self.active_block = None
+        self.completed = False
