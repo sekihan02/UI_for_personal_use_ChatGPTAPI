@@ -22,6 +22,13 @@ Making Recommendationsにチェックを入れると
 
 ![UI_for_GPT_to_chat_recomend](./UI_for_GPT_to_chat_recomend.gif)
 
+##  Open interpreter
+
+Open interpreterにチェックを入れると
+そのあとに入力したメッセージの回答として最大3回APIを使い、ステップバイステップで主にコードを生成します
+
+![open_interpreter.gif](./open_interpreter.gif)
+
 ## 次の推奨質問をChatGPTの回答とBing検索を参考に表示
 
 Enable Recommend Bing Searchにチェックを入れると
