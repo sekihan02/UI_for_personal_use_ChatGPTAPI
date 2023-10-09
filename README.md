@@ -13,7 +13,11 @@ Azure Openai には非対応
 
 ![UI_for_GPT_to_intro.gif](./UI_for_GPT_to_intro.gif)
 
-## 選択文章の提案
+## 選択文章の修正提案
+
+- 選択した文章の修正案をGPT3.5で生成します
+- 文章自体を生成し、誤字脱字のチェックではないです
+- 生成される文章は選択した範囲の文字数からあまり変わらない文字数です
 
 Text Correctionボタンをクリックし、修正したい文章ファイルをファイル選択かファイルをドラッグ＆ドロップすることでブラウザ上に文章を表示できます。
 修正したい箇所をカーソルで選択し、表示される枠にチェックを入れることで修正案をGPT3.5が3つ表示します。変更したい文章がある場合はその文章をクリックすることで置き換えることができ、細かい手動での訂正も可能です。
@@ -21,6 +25,10 @@ Text Correctionボタンをクリックし、修正したい文章ファイル�
 
 ![UI_for_GPT_to_text_correction.gif](./UI_for_GPT_to_text_correction.gif)
 
+#### 参考
+
+- [From Sparse to Dense: GPT-4 Summarization with Chain of Density Prompting](https://arxiv.org/abs/2309.04269)
+- [ABScribe: Rapid Exploration of Multiple Writing Variations in Human-AI Co-Writing Tasks using Large Language Models](https://arxiv.org/abs/2310.00117)
 
 ## 次の推奨質問の表示
 

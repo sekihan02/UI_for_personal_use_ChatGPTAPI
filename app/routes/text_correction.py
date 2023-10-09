@@ -81,7 +81,7 @@ def get_corrections():
                 stop=None,  # 停止トークンの設定
                 top_p=1,  # トークン選択時の確率閾値
             )
-            res_incomplete_str = response["choices"][0]["message"]["content"]
+            res_incomplete_str = response_summary["choices"][0]["message"]["content"]
             
             text_list.append(res_incomplete_str)
             
