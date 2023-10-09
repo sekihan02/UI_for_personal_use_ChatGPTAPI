@@ -7,7 +7,7 @@ plotly
 scikit-learn
 flask
 requests
-openai==0.27.8
+openai==0.28.1
 tiktoken
 langchain==0.0.214
 wikipedia==1.4.0
@@ -18,3 +18,5 @@ pdfplumber
 rich 
 litellm 
 tokentrim
+chardet
+python-dotenv

@@ -1,0 +1,100 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    padding: 20px;
+    position: relative;
+}
+
+h1, h2 {
+    color: #333366;
+}
+
+textarea {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #202f55;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: white;
+    color: black;
+    border: 2px solid #202f55;
+    /* border: 2px solid #4CAF50; */
+}
+
+/* #hover, */
+/* #correction-suggestions { */
+    /* position: absolute; */
+    /* left: 50%; */
+    /* top: [text-areaの下端の位置]px; */
+    /* top: 200px; */
+/* } */
+
+
+
+#text-area {
+    width: 100%;
+    height: 200px;
+}
+
+#drop-zone {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+#loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#loading p {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loading:before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    margin: -40px 0 0 -40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid white;
+    animation: spin 2s linear infinite;
+}
+
+#correction-suggestions p {
+    margin: 0;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+#correction-suggestions p:hover {
+    background-color: #eee;
+}

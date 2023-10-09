@@ -407,9 +407,21 @@ color: #333;
 } */
 
 /* #bing-search-list {
-margin: 20px 0;
-padding: 20px;
-border: 1px solid #ddd;
-border-radius: 5px;
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 } */
-  
+
+#text-correction-button {
+    cursor: pointer;
+}
+body.light-theme #text-correction-button {
+    background-color: #DFDFDF !important;
+    color: #454545 !important;
+    border-color: #454545 !important;
+}
+body.light-theme #text-correction-button.active {
+    background-color: #baecff;
+    color: #333333;
+}

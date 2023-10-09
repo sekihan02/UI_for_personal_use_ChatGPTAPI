@@ -13,6 +13,15 @@ Azure Openai には非対応
 
 ![UI_for_GPT_to_intro.gif](./UI_for_GPT_to_intro.gif)
 
+## 選択文章の提案
+
+Text Correctionボタンをクリックし、修正したい文章ファイルをファイル選択かファイルをドラッグ＆ドロップすることでブラウザ上に文章を表示できます。
+修正したい箇所をカーソルで選択し、表示される枠にチェックを入れることで修正案をGPT3.5が3つ表示します。変更したい文章がある場合はその文章をクリックすることで置き換えることができ、細かい手動での訂正も可能です。
+修正した文章は下のSave Textから保存することができます。
+
+![UI_for_GPT_to_text_correction.gif](./UI_for_GPT_to_text_correction.gif)
+
+
 ## 次の推奨質問の表示
 
 Making Recommendationsにチェックを入れると

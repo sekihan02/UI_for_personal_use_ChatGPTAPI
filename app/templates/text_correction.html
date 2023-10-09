@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Correction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/text_correction.css') }}">
+</head>
+<body>
+    <h1>Text Correction</h1>
+
+    <textarea id="text-area" placeholder="Your text will appear here..."></textarea>
+    <input type="file" id="file-upload">
+    <div id="drop-zone" style="border:2px dashed #ccc; width:300px; height:200px; line-height:200px; text-align:center;">Drop Your File Here</div>
+
+    <!-- Hover with check box -->
+    <div id="hover" style="display: none; position: absolute; border: 1px solid black; background-color: white; padding: 10px;">
+        <input type="checkbox" id="correction-check"> Correct text
+    </div>
+
+    <!-- Correction suggestions -->
+    <div id="correction-suggestions" style="position: absolute; display: none; background-color: lightgrey; padding: 5px;">
+        <!-- Correction suggestions will be inserted here -->
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <p style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white;">Loading...</p>
+    </div>
+
+    <button id="correct-text-btn">Save Text</button>
+
+    <script src="{{ url_for('static', filename='js/text_correction.js') }}"></script>
+</body>
+</html>
