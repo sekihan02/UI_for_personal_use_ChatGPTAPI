@@ -134,6 +134,61 @@ def open_interpreter():
     should_open_interpreter = data['should_open_interpreter']
     return jsonify({'status': 'success'})
 
+
+class StreamingLLMMemory:
+    """
+    StreamingLLMMemory クラスは、最新のメッセージと特定数のattention sinksを
+    メモリに保持するためのクラスです。
+    
+    attention sinksは、言語モデルが常に注意を向けるべき初期のトークンで、
+    モデルが過去の情報を"覚えて"いるのを手助けします。
+    """
+    def __init__(self, max_length=10, attention_sinks=4):
+        """
+        メモリの最大長と保持するattention sinksの数を設定
+        
+        :param max_length: int, メモリが保持するメッセージの最大数
+        :param attention_sinks: int, 常にメモリに保持される初期トークンの数
+        """
+        self.memory = []
+        self.max_length = max_length
+        self.attention_sinks = attention_sinks
+    
+    def get(self):
+        """
+        現在のメモリの内容を返します。
+        
+        :return: list, メモリに保持されているメッセージ
+        """
+        return self.memory
+    
+    def add(self, message):
+        """
+        新しいメッセージをメモリに追加し、メモリがmax_lengthを超えないように
+        調整します。もしmax_lengthを超える場合、attention_sinksと最新のメッセージを
+        保持します。
+        
+        :param message: str, メモリに追加するメッセージ
+        """
+        self.memory.append(message)
+        if len(self.memory) > self.max_length:
+            self.memory = self.memory[:self.attention_sinks] + self.memory[-(self.max_length-self.attention_sinks):]
+    
+    # def add_pair(self, user_message, ai_message):
+    def add_pair(self, user_message, ai_message):
+        """
+        ユーザーとAIからのメッセージのペアをメモリに追加します。
+        
+        :param user_message: str, ユーザーからのメッセージ
+        :param ai_message: str, AIからのメッセージ
+        """
+        self.add("User: " + str(user_message))
+        self.add("AI: " + str(ai_message))
+    
+    # ここにはStreamingLLMとのインタラクションのための追加のメソッドを
+    # 実装することもできます。例えば、generate_response, update_llm_modelなどです。
+
+
 class SimpleMemory:
     def __init__(self, max_length=10):
         self.memory = []
@@ -157,7 +212,8 @@ class SimpleMemory:
         self.add("AI: " + response)
 
 # 8件のメッセージを記憶するように設定
-memory = SimpleMemory(max_length=8)
+# memory = SimpleMemory(max_length=8)
+memory = StreamingLLMMemory(max_length=8)
 
 # encoding = tiktoken.encoding_for_model(settings['model'])
 output_counter = 0  # Add a global counter for output
