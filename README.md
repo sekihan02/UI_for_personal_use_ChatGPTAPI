@@ -5,10 +5,10 @@ Azure Openai には非対応
 - ModelにOpenai APIで使用したいモデル名を指定してください
 - Tempratureにはモデルの創造性を指定してください
 - API KEYにはOpenai APIで発行した自分のAPIを指定してください
+- 短期記憶をStreamingLLMを参考に実装しています [Efficient Streaming Language Models with Attention Sinks](https://arxiv.org/abs/2309.17453)
 - Ctrl+Enterで送信
 - Enterで改行
 - 背景色の切り替え機能
-- 短期記憶を追加
 - 使用トークン数の出力
 
 ![UI_for_GPT_to_intro.gif](./UI_for_GPT_to_intro.gif)
