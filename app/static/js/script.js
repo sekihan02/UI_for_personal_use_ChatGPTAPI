@@ -41,18 +41,54 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         },
         body: JSON.stringify({message: message})
     });
-    var data = await response.json();
+    // var data = await response.json();
 
-    // Display the response
-    var gptResponse = sanitizeHTML(data.response);
-    // chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${data.response.replace(/\n/g, '<br>')}</p>`;
-    chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${gptResponse.replace(/\n/g, '<br>')}</p>`;
-    // This part is inside the function that handles the server response.
-    // Assuming that "data" is the variable that contains the server response.
-    document.getElementById("token-count").innerText = "Tokens: " + data.output_counter;
+    // // Display the response
+    // var gptResponse = sanitizeHTML(data.response);
+    // // chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${data.response.replace(/\n/g, '<br>')}</p>`;
+    // chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${gptResponse.replace(/\n/g, '<br>')}</p>`;
+    // // This part is inside the function that handles the server response.
+    // // Assuming that "data" is the variable that contains the server response.
+    // document.getElementById("token-count").innerText = "Tokens: " + data.output_counter;
+    let accumulatedResponse = "";  // 逐次的に追加されるメッセージを保持するための変数
+    let tempMessageElement = null;  // 一時的に表示されるメッセージの要素を参照するための変数
+
+    const reader = response.body.getReader();
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+            break;
+        }
+        const chunkStr = new TextDecoder().decode(value);
+        console.log("Received chunk:", chunkStr);
+        
+        const chunks = chunkStr.split("\n").filter(Boolean);
+
+        for (const singleChunk of chunks) {
+            const data_json = JSON.parse(singleChunk);
+        
+            if (data_json.choices && data_json.choices[0] && data_json.choices[0].delta && data_json.choices[0].delta.content) {
+                accumulatedResponse += data_json.choices[0].delta.content;
+        
+                if (tempMessageElement) {
+                    tempMessageElement.remove();
+                }
+        
+                tempMessageElement = document.createElement("p");
+                tempMessageElement.className = "gpt-text";
+                tempMessageElement.innerHTML = `ChatGPT: ${sanitizeHTML(accumulatedResponse).replace(/\n/g, '<br>')}`;
+                chatBox.appendChild(tempMessageElement);
+            }
+        }
+    }
+
+    
+    // この部分は、finalDataに関連する処理として、chunksを適切に結合してfinalDataを得るためのロジックが存在することを前提としています。    
+    let finalData = mergeChunksIntoFinalData(chunks);
 
     // If there are recommendations, display them
-    if (data.recommendations) {
+    // if (data.recommendations) {
+    if (finalData.recommendations) {
         var recommendList = document.getElementById('recommend-list');
         
         // Clear the existing recommendations
@@ -79,7 +115,8 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     }
 
     // If there are wiki-searchations, display them
-    if (data.wiki_search) {
+    // if (data.wiki_search) {
+    if (finalData.wiki_search) {
         var wiki_searchList = document.getElementById('wiki-search-list');
         
         // Clear the existing wiki_search
@@ -106,7 +143,8 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     }
 
     // 追加
-    if (data.bing_search) {
+    // if (data.bing_search) {
+    if (finalData.bing_search) {
         var bing_searchList = document.getElementById('bing-search-list');
         
         // Clear the existing bing_search
@@ -132,7 +170,8 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         });
     }
 
-    if (data.rec_bing_search) {
+    // if (data.rec_bing_search) {
+    if (finalData.rec_bing_search) {
         var rec_bing_searchList = document.getElementById('rec-bing-search-list');
         
         // Clear the existing bing_search
@@ -158,7 +197,8 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         });
     }
 
-    if (data.strage_search) {
+    // if (data.strage_search) {
+    if (finalData.strage_search) {
         var strage_searchList = document.getElementById('strage-search-list');
         
         // Clear the existing bing_search

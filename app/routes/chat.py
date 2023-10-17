@@ -654,81 +654,40 @@ def get_response():
 
         # メモリに新しい会話のペアを追加
         # res = response["res"]
-        response = openai.ChatCompletion.create(
-            model=settings['model'],
-            messages=conversations,
-            temperature=settings['temperature'],
-        )
-        
-        # def generate_response():
-        #     global output_counter
-        #     response_stream = openai.ChatCompletion.create(
-        #         model=settings['model'],
-        #         messages=conversations,
-        #         temperature=settings['temperature'],
-        #         # stream=True
-        #     )
-
-        #     response_data = {}  # 新しい変数の初期化
-        #     full_content = []  # 応答の全内容を保存するリスト
-        #     for chunk in response_stream:
-        #         if 'choices' in chunk and len(chunk['choices']) > 0:
-        #             content = chunk['choices'][0].get('content', '')
-        #             full_content.append(content)
-        #             yield content.encode('utf-8')
-        #         response_data.update(chunk)  # ここでレスポンスのデータを更新
-
-        #     print(response_data)  # デバッグ出力
-        #     memory.add_pair(message, full_content)
-
-        #     if 'usage' in response_data:
-        #         counter = response_data['usage']['total_tokens']
-        #     else:
-        #         counter = 0  # または適切なデフォルト値
-        #     output_counter += counter
-        #     # ここで全体をJSON形式で返す
-        #     final_response = {
-        #         "response": "".join(full_content),
-        #         'wiki_search': wiki_search,
-        #         'bing_search': bing_search,
-        #         'rec_bing_search': rec_bing_search,
-        #         'recommendations': recommendations,
-        #         'strage_search': strage_search,
-        #         "output_counter": output_counter
-        #     }
-        #     yield json.dumps(final_response).encode('utf-8')
+        def generate_response():
+            try:
             
-        #     # # ストリームが終了したら、全体の応答を再構築する
-        #     # full_response = ''.join(full_content)
-        #     # memory.add_pair(message, full_response)
+                print("get_response endpoint called")  # この行を追加
 
-        #     # # トークン数の計算 (この部分は適切に修正する必要があるかもしれません)
-        #     # counter = response['usage']['total_tokens']  # これはサンプルです。実際のトークン数の計算方法を適用してください。
-        #     # output_counter += counter
+                response = openai.ChatCompletion.create(
+                    model=settings['model'],
+                    messages=conversations,
+                    temperature=settings['temperature'],
+                    stream=True
+                )
+                
+                app.logger.debug("Response from OpenAI: %s", response)  # ログにデバッグ情報を出力
+                
+                for chunk in response:
+                    chunk_str = json.dumps(chunk).encode('utf-8') + b'\n'
+                    # app.logger.debug("Yielding chunk: %s", chunk_str) 
+                    yield chunk_str
 
-        #     # # ストリームが終了したら、他のデータを追加します
-        #     # other_data = jsonify({
-        #     #     'wiki_search': wiki_search, 
-        #     #     'bing_search': bing_search, 
-        #     #     'rec_bing_search': rec_bing_search, 
-        #     #     'recommendations': recommendations, 
-        #     #     'strage_search': strage_search, 
-        #     #     "output_counter": output_counter
-        #     # })
-        #     # yield other_data.get_data()  # get_data()を使用してbytes型データを取得してyield
-
-        # return Response(stream_with_context(generate_response()), content_type='text/plain')
-
-        res = response.choices[0].message['content']
-        memory.add_pair(message, res)
+            except Exception as e:
+                # print("Error calling OpenAI API:", str(e))
+                app.logger.error("Error calling OpenAI API: %s", str(e))  # エラー情報をログに出力
+                
+    return Response(stream_with_context(generate_response()), content_type='application/json')
+    #     res = response.choices[0].message['content']
+    #     memory.add_pair(message, res)
     
-        # counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
-        # counter += num_tokens_from_string(res.choices[0].message['content'], settings['model'])
-        counter += response['usage']['total_tokens']
+    #     # counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
+    #     # counter += num_tokens_from_string(res.choices[0].message['content'], settings['model'])
+    #     counter += response['usage']['total_tokens']
         
-    # return jsonify({'response': res})
-    output_counter += counter
-    return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search, "output_counter": output_counter})
+    # # return jsonify({'response': res})
+    # output_counter += counter
+    # return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search, "output_counter": output_counter})
 
 def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
     """
