@@ -1,6 +1,7 @@
 import os
 import ast
 import io
+import json
 # import base64
 import litellm
 import tokentrim as tt
@@ -21,6 +22,7 @@ from urllib.parse import unquote
 from flask import Blueprint, render_template
 from flask import Flask, request, jsonify
 from flask import current_app as app
+from flask import stream_with_context, Response
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
@@ -182,37 +184,15 @@ class StreamingLLMMemory:
         :param user_message: str, ユーザーからのメッセージ
         :param ai_message: str, AIからのメッセージ
         """
-        self.add("User: " + str(user_message))
-        self.add("AI: " + str(ai_message))
+        # self.add("User: " + user_message)
+        # self.add("AI: " + ai_message)
+        self.add({"role": "user", "content": user_message})
+        self.add({"role": "assistant", "content": ai_message})
     
     # ここにはStreamingLLMとのインタラクションのための追加のメソッドを
     # 実装することもできます。例えば、generate_response, update_llm_modelなどです。
 
-
-class SimpleMemory:
-    def __init__(self, max_length=10):
-        self.memory = []
-        self.max_length = max_length
-
-    # メモリから会話を取得
-    def get(self):
-        return self.memory
-
-    # メモリにメッセージを追加
-    def add(self, message):
-        self.memory.append(message)
-
-        # メモリの長さが最大値を超えた場合は、最古のメッセージを削除
-        if len(self.memory) > self.max_length:
-            self.memory = self.memory[-self.max_length:]
-
-    # ユーザーとAIのメッセージをペアとしてメモリに追加
-    def add_pair(self, message, response):
-        self.add("User: " + message)
-        self.add("AI: " + response)
-
 # 8件のメッセージを記憶するように設定
-# memory = SimpleMemory(max_length=8)
 memory = StreamingLLMMemory(max_length=8)
 
 # encoding = tiktoken.encoding_for_model(settings['model'])
@@ -282,27 +262,6 @@ def get_response():
         verbose=True
     )
     
-    # Open Interpreterのチェックがあったら
-    if should_open_interpreter:
-        print(should_open_interpreter)
-        # Paste your OpenAI API key below.
-        # Let's try to use the updated Interpreter class
-        interpreter = Interpreter()
-        res, counter = interpreter.chat(message)
-
-        # counter += num_tokens_from_string(res, settings['model'])
-
-        
-        # counter += num_tokens_from_string("\n".join(interpret), settings['model'])
-    else:
-        response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
-
-        # メモリに新しい会話のペアを追加
-        res = response["res"]
-        memory.add_pair(message, res)
-    
-        counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
-        counter += num_tokens_from_string(res, settings['model'])
     # RecommendのMaking Recommendationsのチェックがあったら
     if should_recommend:
         rec_template = """あなたは回答を入力として受け取り、その回答を元に次に質問したり、問い合わせたりした方がいい質問を5つ箇条書きで生成してください
@@ -675,6 +634,98 @@ def get_response():
         
         counter += num_tokens_from_string("\n".join(starage_str), settings['model'])
 
+    # Open Interpreterのチェックがあったら
+    if should_open_interpreter:
+        print(should_open_interpreter)
+        # Paste your OpenAI API key below.
+        # Let's try to use the updated Interpreter class
+        interpreter = Interpreter()
+        res, counter = interpreter.chat(message)
+
+        # counter += num_tokens_from_string(res, settings['model'])
+        # counter += num_tokens_from_string("\n".join(interpret), settings['model'])
+    else:
+        # response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
+        conversations = past_conversation
+        # 指示文をメモリの内容に追加
+        conversations.append({"role": "system", "content": "Please answer the question."})
+        # 新しい質問をメモリの内容に追加
+        conversations.append({"role": "user", "content": message})        
+
+        # メモリに新しい会話のペアを追加
+        # res = response["res"]
+        response = openai.ChatCompletion.create(
+            model=settings['model'],
+            messages=conversations,
+            temperature=settings['temperature'],
+        )
+        
+        # def generate_response():
+        #     global output_counter
+        #     response_stream = openai.ChatCompletion.create(
+        #         model=settings['model'],
+        #         messages=conversations,
+        #         temperature=settings['temperature'],
+        #         # stream=True
+        #     )
+
+        #     response_data = {}  # 新しい変数の初期化
+        #     full_content = []  # 応答の全内容を保存するリスト
+        #     for chunk in response_stream:
+        #         if 'choices' in chunk and len(chunk['choices']) > 0:
+        #             content = chunk['choices'][0].get('content', '')
+        #             full_content.append(content)
+        #             yield content.encode('utf-8')
+        #         response_data.update(chunk)  # ここでレスポンスのデータを更新
+
+        #     print(response_data)  # デバッグ出力
+        #     memory.add_pair(message, full_content)
+
+        #     if 'usage' in response_data:
+        #         counter = response_data['usage']['total_tokens']
+        #     else:
+        #         counter = 0  # または適切なデフォルト値
+        #     output_counter += counter
+        #     # ここで全体をJSON形式で返す
+        #     final_response = {
+        #         "response": "".join(full_content),
+        #         'wiki_search': wiki_search,
+        #         'bing_search': bing_search,
+        #         'rec_bing_search': rec_bing_search,
+        #         'recommendations': recommendations,
+        #         'strage_search': strage_search,
+        #         "output_counter": output_counter
+        #     }
+        #     yield json.dumps(final_response).encode('utf-8')
+            
+        #     # # ストリームが終了したら、全体の応答を再構築する
+        #     # full_response = ''.join(full_content)
+        #     # memory.add_pair(message, full_response)
+
+        #     # # トークン数の計算 (この部分は適切に修正する必要があるかもしれません)
+        #     # counter = response['usage']['total_tokens']  # これはサンプルです。実際のトークン数の計算方法を適用してください。
+        #     # output_counter += counter
+
+        #     # # ストリームが終了したら、他のデータを追加します
+        #     # other_data = jsonify({
+        #     #     'wiki_search': wiki_search, 
+        #     #     'bing_search': bing_search, 
+        #     #     'rec_bing_search': rec_bing_search, 
+        #     #     'recommendations': recommendations, 
+        #     #     'strage_search': strage_search, 
+        #     #     "output_counter": output_counter
+        #     # })
+        #     # yield other_data.get_data()  # get_data()を使用してbytes型データを取得してyield
+
+        # return Response(stream_with_context(generate_response()), content_type='text/plain')
+
+        res = response.choices[0].message['content']
+        memory.add_pair(message, res)
+    
+        # counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
+        # counter += num_tokens_from_string(res.choices[0].message['content'], settings['model'])
+        counter += response['usage']['total_tokens']
+        
     # return jsonify({'response': res})
     output_counter += counter
     return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search, "output_counter": output_counter})

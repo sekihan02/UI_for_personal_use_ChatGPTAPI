@@ -17,13 +17,21 @@ document.getElementById('theme-switcher').addEventListener('click', function() {
     }
 });
 
+function sanitizeHTML(str) {
+    var temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
+}
+
 document.getElementById('chatform').addEventListener('submit', async function(event) {
     event.preventDefault();
     var messageBox = document.getElementById('message');
     var chatBox = document.getElementById('chatbox');
     var message = messageBox.value;
     messageBox.value = '';
-    chatBox.innerHTML += `<p class="user-text">You: ${message.replace(/\n/g, '<br>')}</p>`;
+    var userMessage = sanitizeHTML(message);
+    // chatBox.innerHTML += `<p class="user-text">You: ${message.replace(/\n/g, '<br>')}</p>`;
+    chatBox.innerHTML += `<p class="user-text">You: ${userMessage.replace(/\n/g, '<br>')}</p>`;
 
     // Send the message to the server and get the response
     var response = await fetch('/get_response', {
@@ -36,7 +44,9 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     var data = await response.json();
 
     // Display the response
-    chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${data.response.replace(/\n/g, '<br>')}</p>`;
+    var gptResponse = sanitizeHTML(data.response);
+    // chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${data.response.replace(/\n/g, '<br>')}</p>`;
+    chatBox.innerHTML += `<p class="gpt-text">ChatGPT: ${gptResponse.replace(/\n/g, '<br>')}</p>`;
     // This part is inside the function that handles the server response.
     // Assuming that "data" is the variable that contains the server response.
     document.getElementById("token-count").innerText = "Tokens: " + data.output_counter;
