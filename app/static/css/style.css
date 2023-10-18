@@ -104,6 +104,53 @@ h1 {
     box-sizing: border-box;
 }
 
+/* New Chat and Session List Area styles */
+#session-list-area {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s;
+}
+
+#new-chat-button, #toggle-session-list {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#new-chat-button:hover, #toggle-session-list:hover {
+    background-color: #0056b3;
+}
+
+#session-list {
+    margin-top: 10px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    overflow-y: auto;
+}
+
+#session-list > div {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#session-list > div:last-child {
+    border-bottom: none;
+}
+
+.trash-icon {
+    cursor: pointer;
+}
 
 /* 追加したチャットと設定のコンテナ */
 #chat-settings-container {

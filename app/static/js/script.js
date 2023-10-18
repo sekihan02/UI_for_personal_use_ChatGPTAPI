@@ -540,3 +540,53 @@ document.getElementById('open-interpreter-checkbox').addEventListener('change', 
         console.log("Open_interpreter updated successfully");
     }
 });
+
+// Start a new chat session
+// Global variable to store the current session ID
+var currentSessionId;
+
+document.getElementById('new-chat-button').addEventListener('click', function() {
+    var chatBox = document.getElementById('chatbox');
+    var sessionList = document.getElementById('session-list');
+    
+    // Save the current chat session to the session list
+    var sessionDiv = document.createElement('div');
+    sessionDiv.innerHTML = chatBox.innerHTML + '<span class="trash-icon" data-session-id="' + currentSessionId + '">🗑️</span>';
+    sessionDiv.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('trash-icon')) {
+            // Delete session if trash icon is clicked
+            var sessionId = e.target.getAttribute('data-session-id');
+            fetch('/delete_session/' + sessionId, {
+                method: 'DELETE'
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    sessionList.removeChild(sessionDiv);
+                }
+            });
+        } else {
+            // Load the session content into the main chatbox if session is clicked
+            chatBox.innerHTML = sessionDiv.innerHTML.replace('<span class="trash-icon" data-session-id="' + currentSessionId + '">🗑️</span>', ''); // Remove the trash icon
+        }
+    });
+    sessionList.appendChild(sessionDiv);
+    
+    // Clear the main chat box for the new session
+    chatBox.innerHTML = '';
+    // Fetch a new session ID
+    fetch('/start_new_session')
+    .then(response => response.json())
+    .then(data => {
+        currentSessionId = data.session_id;
+    });
+});
+
+// Toggle the display of the session list area
+document.getElementById('toggle-session-list').addEventListener('click', function() {
+    var sessionListArea = document.getElementById('session-list-area');
+    if (sessionListArea.style.left === '0px' || sessionListArea.style.left === '') {
+        sessionListArea.style.left = '-300px';
+    } else {
+        sessionListArea.style.left = '0px';
+    }
+});
