@@ -76,19 +76,27 @@ chat_sessions = {}
 # Generate a new session ID (for simplicity, we'll use an incremental integer)
 current_session_id = 0
 
-@chat_bp.route('/start_new_session', methods=['GET'])
-def start_new_session():
-    global current_session_id
-    chatLog = chat_sessions.get(current_session_id, [])
+# @chat_bp.route('/start_new_session', methods=['GET'])
+# def start_new_session():
+#     global current_session_id
+#     chatLog = chat_sessions.get(current_session_id, [])
     
-    # Store the current chat log to the session list
-    if chatLog:
-        chat_sessions[current_session_id] = chatLog
-    current_session_id = str(uuid.uuid4())
-    chat_sessions[current_session_id] = []
+#     # Store the current chat log to the session list
+#     if chatLog:
+#         chat_sessions[current_session_id] = chatLog
+#     current_session_id = str(uuid.uuid4())
+#     chat_sessions[current_session_id] = []
     
-    return jsonify(session_id=current_session_id)
+#     return jsonify(session_id=current_session_id)
 
+@chat_bp.route('/start_new_session', methods=['GET']) 
+def start_new_session():
+    global current_session_id 
+    current_session_id += 1 
+    chat_sessions[current_session_id] = [] 
+    # Initialize a new chat session return 
+    jsonify(session_id=current_session_id) 
+    
 @chat_bp.route('/delete_session/<session_id>', methods=['DELETE'])
 def delete_session(session_id):
     if session_id in chat_sessions:
