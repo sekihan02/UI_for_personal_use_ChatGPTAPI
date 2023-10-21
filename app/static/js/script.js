@@ -32,6 +32,7 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     var userMessage = sanitizeHTML(message);
     // chatBox.innerHTML += `<p class="user-text">You: ${message.replace(/\n/g, '<br>')}</p>`;
     chatBox.innerHTML += `<p class="user-text">You: ${userMessage.replace(/\n/g, '<br>')}</p>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     // Send the message to the server and get the response
     var response = await fetch('/get_response', {
@@ -79,16 +80,27 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
                 tempMessageElement.innerHTML = `ChatGPT: ${sanitizeHTML(accumulatedResponse).replace(/\n/g, '<br>')}`;
                 chatBox.appendChild(tempMessageElement);
             }
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
 
-    
-    // この部分は、finalDataに関連する処理として、chunksを適切に結合してfinalDataを得るためのロジックが存在することを前提としています。    
-    let finalData = mergeChunksIntoFinalData(chunks);
+    // この部分は、finaldataに関連する処理として、chunksを適切に結合してfinaldataを得るためのロジックが存在することを前提としています。    
+    // let finaldata = mergeChunksIntofinaldata(chunks);
+
+    // accumulatedResponseに保存された完全な応答を使用して、/process_sync エンドポイントにリクエストを送信
+    let syncResponse = await fetch('/process_sync', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({message: message, response: accumulatedResponse})
+    });
+
+    let finaldata = await syncResponse.json();
 
     // If there are recommendations, display them
     // if (data.recommendations) {
-    if (finalData.recommendations) {
+    if (finaldata.recommendations) {
         var recommendList = document.getElementById('recommend-list');
         
         // Clear the existing recommendations
@@ -96,11 +108,13 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     
         // Add the initial message
         var initialMessage = document.createElement('p');
-        initialMessage.textContent = data.recommendations[0]; // "次に推奨される質問は次のようなものが考えられます。"
+        // initialMessage.textContent = data.recommendations[0]; // "次に推奨される質問は次のようなものが考えられます。"
+        initialMessage.textContent = finaldata.recommendations[0];
         recommendList.appendChild(initialMessage);
         
         // Add the recommendations
-        data.recommendations.slice(1).forEach(function(rec) { // Skip the first item
+        // data.recommendations.slice(1).forEach(function(rec) { // Skip the first item
+        finaldata.recommendations.slice(1).forEach(function(rec) { // Skip the first item
             var listItem = document.createElement('li');
             
             // Remove the prefix (like "1. ", "2. ", etc.)
@@ -116,7 +130,7 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
 
     // If there are wiki-searchations, display them
     // if (data.wiki_search) {
-    if (finalData.wiki_search) {
+    if (finaldata.wiki_search) {
         var wiki_searchList = document.getElementById('wiki-search-list');
         
         // Clear the existing wiki_search
@@ -124,11 +138,13 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         
         // Add the initial message
         var initialMessage = document.createElement('p');
-        initialMessage.textContent = data.wiki_search[0];
+        // initialMessage.textContent = data.wiki_search[0];
+        initialMessage.textContent = finaldata.wiki_search[0];
         wiki_searchList.appendChild(initialMessage);
         
         // Add the wiki_search
-        data.wiki_search.slice(1).forEach(function(rec) { // Skip the first item
+        // data.wiki_search.slice(1).forEach(function(rec) { // Skip the first item
+        finaldata.wiki_search.slice(1).forEach(function(rec) { // Skip the first item
             var listItem = document.createElement('li');
             
             // Remove the prefix (like "1. ", "2. ", etc.)
@@ -144,7 +160,7 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
 
     // 追加
     // if (data.bing_search) {
-    if (finalData.bing_search) {
+    if (finaldata.bing_search) {
         var bing_searchList = document.getElementById('bing-search-list');
         
         // Clear the existing bing_search
@@ -152,11 +168,13 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         
         // Add the initial message
         var initialMessage = document.createElement('p');
-        initialMessage.textContent = data.bing_search[0];
+        // initialMessage.textContent = data.bing_search[0];
+        initialMessage.textContent = finaldata.bing_search[0];
         bing_searchList.appendChild(initialMessage);
         
         // Add the bing_search
-        data.bing_search.slice(1).forEach(function(rec) { // Skip the first item
+        // data.bing_search.slice(1).forEach(function(rec) { // Skip the first item
+        finaldata.bing_search.slice(1).forEach(function(rec) { // Skip the first item
             var listItem = document.createElement('li');
             
             // Remove the prefix (like "1. ", "2. ", etc.)
@@ -171,7 +189,7 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     }
 
     // if (data.rec_bing_search) {
-    if (finalData.rec_bing_search) {
+    if (finaldata.rec_bing_search) {
         var rec_bing_searchList = document.getElementById('rec-bing-search-list');
         
         // Clear the existing bing_search
@@ -179,11 +197,13 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         
         // Add the initial message
         var initialMessage = document.createElement('p');
-        initialMessage.textContent = data.rec_bing_search[0];
+        // initialMessage.textContent = data.rec_bing_search[0];
+        initialMessage.textContent = finaldata.rec_bing_search[0];
         rec_bing_searchList.appendChild(initialMessage);
         
         // Add the bing_search
-        data.rec_bing_search.slice(1).forEach(function(rec) { // Skip the first item
+        // data.rec_bing_search.slice(1).forEach(function(rec) { // Skip the first item
+        finaldata.rec_bing_search.slice(1).forEach(function(rec) { // Skip the first item
             var listItem = document.createElement('li');
             
             // Remove the prefix (like "1. ", "2. ", etc.)
@@ -198,7 +218,7 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     }
 
     // if (data.strage_search) {
-    if (finalData.strage_search) {
+    if (finaldata.strage_search) {
         var strage_searchList = document.getElementById('strage-search-list');
         
         // Clear the existing bing_search
@@ -206,11 +226,13 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         
         // Add the initial message
         var initialMessage = document.createElement('p');
-        initialMessage.textContent = data.strage_search[0];
+        // initialMessage.textContent = data.strage_search[0];
+        initialMessage.textContent = finaldata.strage_search[0];
         strage_searchList.appendChild(initialMessage);
         
         // Add the bing_search
-        data.strage_search.slice(1).forEach(function(rec) { // Skip the first item
+        // data.strage_search.slice(1).forEach(function(rec) { // Skip the first item
+        finaldata.strage_search.slice(1).forEach(function(rec) { // Skip the first item
             var listItem = document.createElement('li');
             
             // Remove the prefix (like "1. ", "2. ", etc.)

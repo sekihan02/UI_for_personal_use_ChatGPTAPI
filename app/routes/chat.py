@@ -225,8 +225,8 @@ class StreamingLLMMemory:
     # ここにはStreamingLLMとのインタラクションのための追加のメソッドを
     # 実装することもできます。例えば、generate_response, update_llm_modelなどです。
 
-# 8件のメッセージを記憶するように設定
-memory = StreamingLLMMemory(max_length=8)
+# 16件のメッセージを記憶するように設定
+memory = StreamingLLMMemory(max_length=16)
 
 # encoding = tiktoken.encoding_for_model(settings['model'])
 output_counter = 0  # Add a global counter for output
@@ -295,6 +295,87 @@ def get_response():
         verbose=True
     )
     
+    # Open Interpreterのチェックがあったら
+    if should_open_interpreter:
+        print(should_open_interpreter)
+        # Paste your OpenAI API key below.
+        # Let's try to use the updated Interpreter class
+        interpreter = Interpreter()
+        res, counter = interpreter.chat(message)
+
+        # counter += num_tokens_from_string(res, settings['model'])
+        # counter += num_tokens_from_string("\n".join(interpret), settings['model'])
+    else:
+        # response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
+        conversations = past_conversation
+        # 指示文をメモリの内容に追加
+        conversations.append({"role": "system", "content": "Please answer the question."})
+        # 新しい質問をメモリの内容に追加
+        conversations.append({"role": "user", "content": message})        
+
+        # メモリに新しい会話のペアを追加
+        # res = response["res"]
+        def generate_response():
+            all_chunks = []
+            try:
+            
+                print("get_response endpoint called")  # この行を追加
+
+                response = openai.ChatCompletion.create(
+                    model=settings['model'],
+                    messages=conversations,
+                    temperature=settings['temperature'],
+                    stream=True
+                )
+                
+                app.logger.debug("Response from OpenAI: %s", response)  # ログにデバッグ情報を出力
+                
+                for chunk in response:
+                    chunk_str = json.dumps(chunk).encode('utf-8') + b'\n'
+                    all_chunks.append(chunk_str.decode('utf-8'))
+                    app.logger.debug("Yielding chunk: %s", chunk_str) 
+                    yield chunk_str
+
+            except Exception as e:
+                print("Error calling OpenAI API:", str(e))
+                app.logger.error("Error calling OpenAI API: %s", str(e))  # エラー情報をログに出力
+            return "".join(all_chunks)
+                
+    # return jsonify({'response': generate_response()})
+    return Response(stream_with_context(generate_response()), content_type='application/json')
+
+@chat_bp.route('/process_sync', methods=['POST'])
+def process_sync():
+    global should_recommend
+    global should_recommend_wiki
+    global should_recommend_bing  # 追加
+    global should_recommend_rec_bing  # 追加
+    global should_strage_search  # 追加
+    global output_counter  # 追加
+    global should_open_interpreter  # 追加
+    counter = 0
+
+    res = ""
+    recommendations = ""
+    rec_bing_search = ""
+    strage_search = ""
+    bing_search = ""
+    wiki_search = ""
+    
+    data = request.json
+    message = data.get('message', "")
+    res = data.get('response', "")
+    
+    app.logger.debug("Debug message: %s", message) 
+    app.logger.debug("Debug responce: %s", res) 
+    # Get the response from the GPT model
+    openai.api_key = settings['api_key']
+    os.environ["OPENAI_API_KEY"] = openai.api_key
+    llm = ChatOpenAI(
+        model_name=settings['model'],
+        temperature=settings['temperature']
+    )
+    
     # RecommendのMaking Recommendationsのチェックがあったら
     if should_recommend:
         rec_template = """あなたは回答を入力として受け取り、その回答を元に次に質問したり、問い合わせたりした方がいい質問を5つ箇条書きで生成してください
@@ -322,6 +403,9 @@ def get_response():
         )
         q_recommend = res_recchain({"response": res})
         recommendations = ["次に推奨される質問は次のようなものが考えられます。"] + q_recommend["recommend"].split('\n')
+        
+        app.logger.debug("Debug q_recommend: %s", q_recommend)
+        app.logger.debug("Debug recommendations: %s", recommendations)
 
         counter += num_tokens_from_string(rec_temp.format(response=["次に推奨される質問は次のようなものが考えられます。"] + q_recommend["recommend"].split('\n')), settings['model'])
         counter += num_tokens_from_string(q_recommend["recommend"], settings['model'])
@@ -667,50 +751,6 @@ def get_response():
         
         counter += num_tokens_from_string("\n".join(starage_str), settings['model'])
 
-    # Open Interpreterのチェックがあったら
-    if should_open_interpreter:
-        print(should_open_interpreter)
-        # Paste your OpenAI API key below.
-        # Let's try to use the updated Interpreter class
-        interpreter = Interpreter()
-        res, counter = interpreter.chat(message)
-
-        # counter += num_tokens_from_string(res, settings['model'])
-        # counter += num_tokens_from_string("\n".join(interpret), settings['model'])
-    else:
-        # response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
-        conversations = past_conversation
-        # 指示文をメモリの内容に追加
-        conversations.append({"role": "system", "content": "Please answer the question."})
-        # 新しい質問をメモリの内容に追加
-        conversations.append({"role": "user", "content": message})        
-
-        # メモリに新しい会話のペアを追加
-        # res = response["res"]
-        def generate_response():
-            try:
-            
-                print("get_response endpoint called")  # この行を追加
-
-                response = openai.ChatCompletion.create(
-                    model=settings['model'],
-                    messages=conversations,
-                    temperature=settings['temperature'],
-                    stream=True
-                )
-                
-                app.logger.debug("Response from OpenAI: %s", response)  # ログにデバッグ情報を出力
-                
-                for chunk in response:
-                    chunk_str = json.dumps(chunk).encode('utf-8') + b'\n'
-                    # app.logger.debug("Yielding chunk: %s", chunk_str) 
-                    yield chunk_str
-
-            except Exception as e:
-                # print("Error calling OpenAI API:", str(e))
-                app.logger.error("Error calling OpenAI API: %s", str(e))  # エラー情報をログに出力
-                
-    return Response(stream_with_context(generate_response()), content_type='application/json')
     #     res = response.choices[0].message['content']
     #     memory.add_pair(message, res)
     
@@ -720,7 +760,17 @@ def get_response():
         
     # # return jsonify({'response': res})
     # output_counter += counter
+    
     # return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search, "output_counter": output_counter})
+
+    return jsonify({
+        'wiki_search': wiki_search, 
+        'bing_search': bing_search, 
+        'rec_bing_search': rec_bing_search, 
+        'recommendations': recommendations, 
+        'strage_search': strage_search, 
+        "output_counter": output_counter
+    })
 
 def get_bing_search_results_for_keywords(keywords, num_results=3, lang='ja-JP'):
     """
