@@ -236,30 +236,22 @@ def num_tokens_from_string(string: str, encoding_name: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
+# 進行中の生成を停止するためのフラグ
+stop_generation_flag = False
+
+@chat_bp.route('/stop_generation', methods=['POST'])
+def stop_generation():
+    global stop_generation_flag
+    stop_generation_flag = True
+    return jsonify({'status': 'success', 'message': 'Generation stopping'})
+
+
 @chat_bp.route('/get_response', methods=['POST'])
 def get_response():
-    global should_recommend
-    global should_recommend_wiki
-    global should_recommend_bing  # 追加
-    global should_recommend_rec_bing  # 追加
-    global should_strage_search  # 追加
-    global output_counter  # 追加
-    global should_open_interpreter  # 追加
-    counter = 0
-
-    res = ""
-    recommendations = ""
-    rec_bing_search = ""
-    strage_search = ""
-    bing_search = ""
-    wiki_search = ""
-    # app.logger.info(f"In get_response, should_recommend: {should_recommend}")  # Debugging statement
-
+    global stop_generation_flag
+    stop_generation_flag = False  # フラグをリセット
     # get the user's message from the POST request
     message = request.get_json()['message']
-
-    # data = request.json
-    # message = data['message']
 
     # 以前の会話をメモリから取得
     past_conversation = memory.get()
@@ -306,7 +298,6 @@ def get_response():
         # counter += num_tokens_from_string(res, settings['model'])
         # counter += num_tokens_from_string("\n".join(interpret), settings['model'])
     else:
-        # response = res_chain({"question": "\n".join(past_conversation + ["User: "+message])})
         conversations = past_conversation
         # 指示文をメモリの内容に追加
         conversations.append({"role": "system", "content": "Please answer the question."})
@@ -314,11 +305,8 @@ def get_response():
         conversations.append({"role": "user", "content": message})        
 
         # メモリに新しい会話のペアを追加
-        # res = response["res"]
         def generate_response():
-            all_chunks = []
             try:
-            
                 print("get_response endpoint called")  # この行を追加
 
                 response = openai.ChatCompletion.create(
@@ -331,17 +319,17 @@ def get_response():
                 app.logger.debug("Response from OpenAI: %s", response)  # ログにデバッグ情報を出力
                 
                 for chunk in response:
+                    if stop_generation_flag:
+                        print("Generation stopped by user")
+                        break  # ユーザーによって停止された場合はループを抜ける
                     chunk_str = json.dumps(chunk).encode('utf-8') + b'\n'
-                    all_chunks.append(chunk_str.decode('utf-8'))
                     app.logger.debug("Yielding chunk: %s", chunk_str) 
                     yield chunk_str
 
             except Exception as e:
                 print("Error calling OpenAI API:", str(e))
                 app.logger.error("Error calling OpenAI API: %s", str(e))  # エラー情報をログに出力
-            return "".join(all_chunks)
                 
-    # return jsonify({'response': generate_response()})
     return Response(stream_with_context(generate_response()), content_type='application/json')
 
 @chat_bp.route('/process_sync', methods=['POST'])
@@ -365,6 +353,7 @@ def process_sync():
     data = request.json
     message = data.get('message', "")
     res = data.get('response', "")
+    counter += num_tokens_from_string(message + res, settings['model'])
     
     app.logger.debug("Debug message: %s", message) 
     app.logger.debug("Debug responce: %s", res) 
@@ -751,18 +740,7 @@ def process_sync():
         
         counter += num_tokens_from_string("\n".join(starage_str), settings['model'])
 
-    #     res = response.choices[0].message['content']
-    #     memory.add_pair(message, res)
-    
-    #     # counter += num_tokens_from_string(q_template.format(question="\n".join(past_conversation + ["User: "+message])), settings['model'])
-    #     # counter += num_tokens_from_string(res.choices[0].message['content'], settings['model'])
-    #     counter += response['usage']['total_tokens']
-        
-    # # return jsonify({'response': res})
-    # output_counter += counter
-    
-    # return jsonify({'response': res, 'wiki_search': wiki_search, 'bing_search': bing_search, 'rec_bing_search': rec_bing_search, 'recommendations': recommendations, 'strage_search': strage_search, "output_counter": output_counter})
-
+    output_counter = str(counter)
     return jsonify({
         'wiki_search': wiki_search, 
         'bing_search': bing_search, 

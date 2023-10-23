@@ -26,8 +26,9 @@
     </div>
     <!-- New Chat and Session List Area --> 
     <div id="session-list-area" style="position: fixed; left: 10px; top: 10px;"> 
-        <button id="new-chat-button" style="padding: 5px 10px; margin-right: 5px;">新しいチャット</button> 
-        <button id="toggle-session-list" style="padding: 5px 10px;">セッションリストを切り替え</button> 
+        <button id="new-chat-button" style="padding: 5px 10px; margin-right: 5px;">+</button> 
+        <button id="toggle-session-list" style="padding: 5px 10px;">Ⅲ</button>
+        <button id="toggle-session-list-area" style="padding: 5px 10px;">≡</button>
         <div id="session-list" style="display: none; margin-top: 10px; border: 1px solid #ddd; padding: 10px; max-height: 300px; overflow-y: auto;"> 
             <!-- Past chat sessions will be listed here --> 
         </div> 
@@ -38,12 +39,38 @@
     <div id="app-container">
         <div id="chat-settings-container">
             <div id="chatbox">
+                <!-- <button id="stop-button" onclick="stopGeneration()">生成を停止</button>
+                <script type="text/javascript">
+                    function stopGeneration() {
+                        // サーバーに停止リクエストを送信する
+                        fetch('/stop_generation', {
+                            method: 'POST',
+                            headers: {
+                            'Content-Type': 'application/json'
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Stop request sent:', data);
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                    }
+                </script> -->
+                  
                 <!-- Chat messages will be inserted here -->
             </div>
+            
             <form id="chatform">
                 <div id="input-container">
                     <textarea id="message" placeholder="Type your message here"></textarea>
-                    <input type="submit" value="Send">
+                    <div id="button-group">
+                        <input type="submit" value="Send">
+                        <button id="stop-button" onclick="event.preventDefault(); stopGeneration()">生成を停止</button>
+                    </div>
+                    <!-- <input type="submit" value="Send">
+                    <button id="stop-button" onclick="event.preventDefault(); stopGeneration()">生成を停止</button> -->
                 </div>
             </form>
         </div>

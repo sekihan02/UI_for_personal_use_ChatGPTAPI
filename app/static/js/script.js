@@ -246,6 +246,10 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
         });
     }
 
+    // This part is inside the function that handles the server response.
+    // Assuming that "data" is the variable that contains the server response.
+    document.getElementById("token-count").innerText = "Tokens: " + finaldata.output_counter;
+
     chatBox.scrollTop = chatBox.scrollHeight;
 });
 
@@ -633,3 +637,37 @@ document.getElementById('toggle-session-list').addEventListener('click', functio
         sessionList.style.display = 'none';
     } 
 }); 
+
+document.getElementById('toggle-session-list-area').addEventListener('click', function() {
+    const sessionListArea = document.getElementById('session-list-area');
+    
+    if (sessionListArea.style.width === '50px' || sessionListArea.style.width === '') {
+      sessionListArea.style.width = '200px';
+      document.body.style.marginLeft = '200px';  // bodyの左マージンを調整
+    } else {
+      sessionListArea.style.width = '50px';
+      document.body.style.marginLeft = '50px';  // bodyの左マージンを調整
+    }
+});
+
+function stopGeneration() {
+    // サーバーに停止リクエストを送信する
+    fetch('/stop_generation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Stop request sent:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    const stopButton = document.getElementById('stop-button');
+    stopButton.style.display = 'block'; // ボタンを表示
+});
