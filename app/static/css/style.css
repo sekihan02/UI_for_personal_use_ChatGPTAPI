@@ -183,8 +183,7 @@ h1 {
 }
 
 #stop-button {
-    /* width: 70px;
-    height: 60px; */
+    width: 70px;
     border: 1px solid #4a4a4a;
     border-radius: 5px;
     background-color: #98e2ff;
@@ -193,7 +192,7 @@ h1 {
     transition: 0.3s;
 }
 
-#chatform input[type="submit"], #stop-button {
+#chatform input[type="submit"] {
     width: auto;
     height: 20px;
     font-size: 12px;
@@ -218,6 +217,7 @@ h1 {
     flex-direction: column;
     width: 30%;
     height: 80vh;
+    /* height: auto; */
     border: 1px solid #4a4a4a;
     padding: 20px;
     border-radius: 10px;
@@ -485,15 +485,17 @@ color: #333;
     border-radius: 5px;
 } */
 
+#other-functions-container {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-start;
+}
+
 #text-correction-button {
-    cursor: pointer;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    color: #ffffff;
+    background-color: #000000;
 }
-body.light-theme #text-correction-button {
-    background-color: #DFDFDF !important;
-    color: #454545 !important;
-    border-color: #454545 !important;
-}
-body.light-theme #text-correction-button.active {
-    background-color: #baecff;
-    color: #333333;
-}
+

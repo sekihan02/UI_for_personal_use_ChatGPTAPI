@@ -32,32 +32,11 @@
         <div id="session-list" style="display: none; margin-top: 10px; border: 1px solid #ddd; padding: 10px; max-height: 300px; overflow-y: auto;"> 
             <!-- Past chat sessions will be listed here --> 
         </div> 
-    </div>
-    
-    <button id="text-correction-button" onclick="location.href='/text_correction'" style="position: fixed; top: 10px; right: 130px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Text Correction</button>
+    </div>    
     <button id="theme-switcher" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Switch Theme</button>
     <div id="app-container">
         <div id="chat-settings-container">
             <div id="chatbox">
-                <!-- <button id="stop-button" onclick="stopGeneration()">生成を停止</button>
-                <script type="text/javascript">
-                    function stopGeneration() {
-                        // サーバーに停止リクエストを送信する
-                        fetch('/stop_generation', {
-                            method: 'POST',
-                            headers: {
-                            'Content-Type': 'application/json'
-                            },
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('Stop request sent:', data);
-                        })
-                        .catch((error) => {
-                            console.error('Error:', error);
-                        });
-                    }
-                </script> -->
                   
                 <!-- Chat messages will be inserted here -->
             </div>
@@ -67,12 +46,17 @@
                     <textarea id="message" placeholder="Type your message here"></textarea>
                     <div id="button-group">
                         <input type="submit" value="Send">
-                        <button id="stop-button" onclick="event.preventDefault(); stopGeneration()">生成を停止</button>
+                        <button id="stop-button" onclick="event.preventDefault(); stopGeneration()">生成停止</button>
                     </div>
                     <!-- <input type="submit" value="Send">
                     <button id="stop-button" onclick="event.preventDefault(); stopGeneration()">生成を停止</button> -->
                 </div>
             </form>
+            <!-- <button id="text-correction-button" onclick="location.href='/text_correction'" style="position: fixed; top: 10px; right: 130px; padding: 10px 20px; border: none; border-radius: 5px; color: #ffffff; background-color: #000000;">Text Correction</button> -->
+
+            <div id="other-functions-container">
+                <button id="text-correction-button" onclick="location.href='/text_correction'">Text Correction</button>
+            </div>
         </div>
         <div id="settings-container">
             <div id="tab-buttons">
