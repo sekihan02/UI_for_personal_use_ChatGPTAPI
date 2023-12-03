@@ -4,7 +4,6 @@ import ast
 import io
 import json
 # import base64
-import litellm
 import tokentrim as tt
 from typing import List, Dict, Union
 import sys
@@ -29,7 +28,9 @@ from azure.search.documents import SearchClient
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 import openai
-from openai.embeddings_utils import get_embedding, cosine_similarity
+from openai import OpenAI
+
+# from openai.embeddings_utils import get_embedding, cosine_similarity
 import tiktoken
 
 import wikipedia
@@ -305,26 +306,39 @@ def get_response():
         conversations.append({"role": "user", "content": message})        
 
         # メモリに新しい会話のペアを追加
+        client = OpenAI()
         def generate_response():
             try:
                 print("get_response endpoint called")  # この行を追加
-
-                response = openai.ChatCompletion.create(
+                # アシスタントの作成
+                response = client.chat.completions.create(
                     model=settings['model'],
                     messages=conversations,
                     temperature=settings['temperature'],
-                    stream=True
+                    stream=True,
                 )
+                # response = openai.ChatCompletion.create(
+                #     model=settings['model'],
+                #     messages=conversations,
+                #     temperature=settings['temperature'],
+                #     stream=True
+                # )
                 
                 app.logger.debug("Response from OpenAI: %s", response)  # ログにデバッグ情報を出力
                 
+
+                # ストリーミングレスポンスの処理
                 for chunk in response:
-                    if stop_generation_flag:
-                        print("Generation stopped by user")
-                        break  # ユーザーによって停止された場合はループを抜ける
-                    chunk_str = json.dumps(chunk).encode('utf-8') + b'\n'
-                    app.logger.debug("Yielding chunk: %s", chunk_str) 
-                    yield chunk_str
+                    if chunk.choices[0].delta.content is not None:
+                        if stop_generation_flag:
+                            print("Generation stopped by user")
+                            break  # ユーザーによって停止された場合はループを抜ける
+                        chunk_data = {
+                            "content": chunk.choices[0].delta.content
+                        }
+                        chunk_str = json.dumps(chunk_data) + '\n'
+                        app.logger.debug("Yielding chunk: %s", chunk_str)
+                        yield chunk_str  # JSON形式の文字列を返す
 
             except Exception as e:
                 print("Error calling OpenAI API:", str(e))

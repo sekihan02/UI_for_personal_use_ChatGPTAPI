@@ -53,36 +53,40 @@ document.getElementById('chatform').addEventListener('submit', async function(ev
     // document.getElementById("token-count").innerText = "Tokens: " + data.output_counter;
     let accumulatedResponse = "";  // 逐次的に追加されるメッセージを保持するための変数
     let tempMessageElement = null;  // 一時的に表示されるメッセージの要素を参照するための変数
-
+    // ストリーミングレスポンスの処理
     const reader = response.body.getReader();
     while (true) {
         const { done, value } = await reader.read();
-        if (done) {
-            break;
-        }
-        const chunkStr = new TextDecoder().decode(value);
-        console.log("Received chunk:", chunkStr);
-        
-        const chunks = chunkStr.split("\n").filter(Boolean);
+        if (done) break;
 
+        const chunkStr = new TextDecoder().decode(value);
+        const chunks = chunkStr.split("\n").filter(Boolean);
         for (const singleChunk of chunks) {
-            const data_json = JSON.parse(singleChunk);
-        
-            if (data_json.choices && data_json.choices[0] && data_json.choices[0].delta && data_json.choices[0].delta.content) {
-                accumulatedResponse += data_json.choices[0].delta.content;
-        
-                if (tempMessageElement) {
-                    tempMessageElement.remove();
+            try {
+                const data_json = JSON.parse(singleChunk);
+                if (data_json.content) {
+                    accumulatedResponse += data_json.content;
+
+                    // ここで accumulatedResponse を UI に表示
+                    const chatBox = document.getElementById('chatbox');
+                    if (chatBox) {
+                        // 既存の tempMessageElement を削除
+                        if (tempMessageElement) {
+                            tempMessageElement.remove();
+                        }
+                        // 新しいメッセージ要素を作成し、chatBox に追加
+                        tempMessageElement = document.createElement("p");
+                        tempMessageElement.className = "gpt-text";
+                        tempMessageElement.innerHTML = `ChatGPT: ${sanitizeHTML(accumulatedResponse).replace(/\n/g, '<br>')}`;
+                        chatBox.appendChild(tempMessageElement);
+                    }
                 }
-        
-                tempMessageElement = document.createElement("p");
-                tempMessageElement.className = "gpt-text";
-                tempMessageElement.innerHTML = `ChatGPT: ${sanitizeHTML(accumulatedResponse).replace(/\n/g, '<br>')}`;
-                chatBox.appendChild(tempMessageElement);
+            } catch (error) {
+                console.error("Invalid JSON chunk received:", singleChunk);
             }
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
+
 
     // この部分は、finaldataに関連する処理として、chunksを適切に結合してfinaldataを得るためのロジックが存在することを前提としています。    
     // let finaldata = mergeChunksIntofinaldata(chunks);
@@ -667,7 +671,14 @@ function stopGeneration() {
     });
 }
 
+// document.addEventListener('DOMContentLoaded', (event) => {
+//     const stopButton = document.getElementById('stop-button');
+//     stopButton.style.display = 'block'; // ボタンを表示
+// });
 document.addEventListener('DOMContentLoaded', (event) => {
     const stopButton = document.getElementById('stop-button');
-    stopButton.style.display = 'block'; // ボタンを表示
+    if (stopButton) {
+        stopButton.style.display = 'block'; // ボタンを表示
+        // ここに他のイベントリスナーを追加するコードを記述
+    }
 });
